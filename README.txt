@@ -1,4 +1,4 @@
-# Run RUN_THIS.sql 
+#Run RUN_THIS.sql 
 
 To get the skeleton running, open a terminal and do the following:
 	1. enter the skeleton folder 'cd path/to/skeleton'
