@@ -4,8 +4,8 @@
   <h4>{{message}}!</h4>
 {% endif %}
 <title>Photoshare</title>
-{% if name %}
-  <h1>Hello {{ name }}!</h1>
+{% if info %}
+  <h1>Welcome back, {{ info['firstname'] + ' ' + info['lastname'] }}!</h1>
 {% endif %}
 
 {% if photos %}
@@ -21,8 +21,7 @@
 
 {% if message is none %}
   <p>You should <a href='/login'>login!</a></p>
-{% else %}
-  <p> Go to <a href='/profile'>profile?</a></p>
+
 {% endif %}
 
 <ul>

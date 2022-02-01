@@ -45,6 +45,12 @@ def getUserList():
 class User(flask_login.UserMixin):
 	pass
 
+def getUserInfo(uid):
+	cursor = conn.cursor()
+	cursor.execute(f"SELECT firstname,lastname FROM Users WHERE user_id = {uid}")
+	info_raw = cursor.fetchall()[0]
+	info = {'firstname': info_raw[0], 'lastname': info_raw[1]}
+	return info
 @login_manager.user_loader
 def user_loader(email):
 	users = getUserList()
@@ -82,7 +88,7 @@ def login():
 		return '''
 			   <form action='login' method='POST'>
 				<input type='text' name='email' id='email' placeholder='email'></input>
-				<input type='password' name='password' id='password' placeholder='password'></input>
+				<input type='password' name='password' id='password' placeholder='Enter your password'></input>
 				<input type='submit' name='submit'></input>
 			   </form></br>
 		   <a href='/'>Home</a>
@@ -123,19 +129,24 @@ def register_user():
 	try:
 		email=request.form.get('email')
 		password=request.form.get('password')
+		firstname=request.form.get('firstname')
+		lastname=request.form.get('lastname')
+		date=request.form.get('birthdate')
+		context = {'firstname': firstname, 'lastname': lastname, 'email': email}
+		print(request.form)
 	except:
 		print("couldn't find all tokens") #this prints to shell, end users will not see this (all print statements go to shell)
 		return flask.redirect(flask.url_for('register'))
 	cursor = conn.cursor()
 	test =  isEmailUnique(email)
 	if test:
-		print(cursor.execute("INSERT INTO Users (email, password) VALUES ('{0}', '{1}')".format(email, password)))
+		print(cursor.execute("INSERT INTO Users (email, password,firstname,lastname,birthdate) VALUES ('{0}','{1}','{2}','{3}','{4}')".format(email, password,firstname,lastname,date)))
 		conn.commit()
 		#log user in
 		user = User()
 		user.id = email
 		flask_login.login_user(user)
-		return render_template('hello.html', name=email, message='Account Created!')
+		return render_template('hello.html', info=context, message='Account Created!')
 	else:
 		print("couldn't find all tokens")
 		return flask.redirect(flask.url_for('register'))
@@ -172,7 +183,11 @@ def isEmailUnique(email):
 @flask_login.login_required
 def protected():
 	uid = getUserIdFromEmail(flask_login.current_user.id)
-	return render_template('hello.html', name=flask_login.current_user.id, message="Here's your profile",photos=getUsersPhotos(uid),base64=base64)
+	cursor = conn.cursor()
+	cursor.execute(f"SELECT firstname,lastname FROM Users WHERE user_id = {uid}")
+	info_raw = cursor.fetchall()[0]
+	info = {'firstname':info_raw[0],'lastname': info_raw[1]}
+	return render_template('hello.html', name=flask_login.current_user.id,photos=getUsersPhotos(uid),base64=base64,info=info)
 
 #begin photo uploading code
 # photos uploaded using base64 encoding so they can be directly embeded in HTML
@@ -191,7 +206,7 @@ def upload_file():
 		cursor = conn.cursor()
 		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption) VALUES (%s, %s, %s )''' ,(photo_data,uid, caption))
 		conn.commit()
-		return render_template('hello.html', name=flask_login.current_user.id, message='Photo uploaded!', photos=getUsersPhotos(uid),base64=base64)
+		return flask.redirect(flask.url_for('protected'))
 	#The method is GET so we return a  HTML form to upload the a photo.
 	else:
 		return render_template('upload.html')
@@ -208,12 +223,10 @@ def delete_photo():
 		cursor.execute(f'DELETE FROM Pictures WHERE picture_id={photo_id}')
 		conn.commit()
 		uid = getUserIdFromEmail(flask_login.current_user.id)
-
 		return render_template('hello.html', name=flask_login.current_user.id, message='Photo uploaded!', photos=getUsersPhotos(uid),base64=base64)
 
 	uid=getUserIdFromEmail(flask_login.current_user.id)
 	photos = getUsersPhotos(uid)
-	print("photos",photos[1][1])
 	return render_template("delete_photos.html",photos=photos,base64=base64)
 
 
