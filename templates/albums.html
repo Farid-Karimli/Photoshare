@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Albums</title>
+</head>
+<body>
+
+    {% if albums %}
+        {% for album in albums %}
+            <div>
+                <!-- Album is of form: ( ( album name, date created, cover image data) , ... )-->
+                <p> <a href="/album/{{ album[0] }}"> {{ album[1] }} </a> </p>
+                <img src='data:image/jpg;base64, {{ base64.b64encode(album[3]).decode("ascii") }}' width="100px" height="100px"/></li>
+
+            </div>
+        {% endfor %}
+    {% else %}
+        <h2> You don't have any albums! <a href="/upload-album"> Create one.</a></h2>
+    {%  endif %}
+
+</body>
+</html>

@@ -8,6 +8,7 @@
   <h1>Welcome back, {{ info['firstname'] + ' ' + info['lastname'] }}!</h1>
 {% endif %}
 
+{#
 {% if photos %}
 <h2>Here are your photos</h2>
     <ul>
@@ -18,6 +19,7 @@
     {% endfor %}
     </ul>
 {% endif %}
+#}
 
 {% if message is none %}
   <p>You should <a href='/login'>login!</a></p>
@@ -25,10 +27,7 @@
 {% endif %}
 
 <ul>
-<li><a href='/photos'>My photos</a></li>
-<li><a href='/upload'>Upload a photo</a></li>
-<li><a href='/delete'>Delete a photo</a></li>
-<li><a href='/album'>Create an album</a></li>
+<li><a href='/albums'>My albums</a></li>
 <li><a href='/logout'>Logout</a></li>
 <li><a href='/'>Home</a></li>
 </ul>

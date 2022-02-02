@@ -6,7 +6,7 @@
         <div class="title">
             <h1>Upload a photo to Photoshare</h1>
         </div>
-            <form method="post" enctype="multipart/form-data" action="/upload">
+            <form method="post" enctype="multipart/form-data" action="/upload/{{ album_id }}">
                 <label for="photo">Select photo:</label>
                 <input type="file" name="photo" required='true' /><br />
                 <label for="caption">Please caption:</label>

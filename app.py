@@ -51,6 +51,9 @@ def getUserInfo(uid):
 	info_raw = cursor.fetchall()[0]
 	info = {'firstname': info_raw[0], 'lastname': info_raw[1]}
 	return info
+
+
+
 @login_manager.user_loader
 def user_loader(email):
 	users = getUserList()
@@ -156,11 +159,13 @@ def getUsersPhotos(uid):
 	cursor.execute("SELECT imgdata, picture_id, caption FROM Pictures WHERE user_id = '{0}'".format(uid))
 	return cursor.fetchall() #NOTE list of tuples, [(imgdata, pid), ...]
 
+# NOTE list of tuples, [(imgdata, pid), ...]
+
 def getUserAlbums(uid):
 	cursor = conn.cursor()
-	cursor.execute("SELECT imgdata, picture_id, caption FROM Pictures WHERE user_id = '{0}'".format(uid))
-	return cursor.fetchall()  # NOTE list of tuples, [(imgdata, pid), ...]
-
+	cursor.execute(f"SELECT album_id,name,created,cover_img FROM Albums WHERE user = {uid}")
+	info_raw = cursor.fetchall()
+	return info_raw
 
 
 
@@ -195,21 +200,21 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 def allowed_file(filename):
 	return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/upload/<album_id>', methods=['GET', 'POST'])
 @flask_login.login_required
-def upload_file():
+def upload_file(album_id):
 	if request.method == 'POST':
 		uid = getUserIdFromEmail(flask_login.current_user.id)
 		imgfile = request.files['photo']
 		caption = request.form.get('caption')
 		photo_data =imgfile.read()
 		cursor = conn.cursor()
-		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption) VALUES (%s, %s, %s )''' ,(photo_data,uid, caption))
+		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption,album_id) VALUES (%s, %s, %s, %s )''' ,(photo_data,uid, caption,album_id))
 		conn.commit()
-		return flask.redirect(flask.url_for('protected'))
+		return flask.redirect(flask.url_for('album',id=album_id))
 	#The method is GET so we return a  HTML form to upload the a photo.
 	else:
-		return render_template('upload.html')
+		return render_template('upload.html',album_id=album_id)
 #end photo uploading code
 
 @app.route('/delete', methods=['GET','POST'])
@@ -229,11 +234,60 @@ def delete_photo():
 	photos = getUsersPhotos(uid)
 	return render_template("delete_photos.html",photos=photos,base64=base64)
 
+@app.route("/upload-album", methods=['GET','POST'])
+@flask_login.login_required
+def create_album():
+	if request.method == "POST":
+		uid = getUserIdFromEmail(flask_login.current_user.id)
+
+		album_name = request.form.get('name')
+		cover_img_file = request.files['cover_img']
+		date = request.form.get('created')
+		cover_img_data = cover_img_file.read()
+		cursor = conn.cursor()
+		cursor.execute('''INSERT INTO Albums (user, name, created,cover_img) VALUES (%s, %s, %s, %s)''' ,(uid,album_name, date,cover_img_data))
 
 
+		conn.commit()
+		return flask.redirect("/albums")
+
+	return '''
+			   <form action='upload-album' method='POST' enctype="multipart/form-data">
+			    <label for="name">Enter the name of the album:</label>
+				<input type='text' name='name' id='album_name' placeholder='Album name'></input><br/>
+				
+				<label for="cover_img">Select cover image:</label>
+                <input type="file" name="cover_img" required='true' /><br />
+                
+                				
+				<input type='date' name='created'/>
+				
+				<input type='submit' name='submit' value="Create"></input>
+			   </form></br>
+			   '''
+
+
+
+@app.route("/albums", methods=['GET','POST'])
+@flask_login.login_required
+def albums():
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	album_list = getUserAlbums(uid)
+
+	return render_template("albums.html", albums=album_list, base64=base64)
+
+@app.route("/album/<id>",methods=['GET'])
+@flask_login.login_required
+def album(id):
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	cursor = conn.cursor()
+	cursor.execute(f"SELECT name,created,cover_img FROM Albums WHERE album_id={id}")
+	album = cursor.fetchall()[0]
+	cursor.execute(f'SELECT picture_id, imgdata,caption FROM Pictures WHERE album_id = {id}')
+	photos = cursor.fetchall()
+	return render_template("album.html", photos=photos, album=album, album_id=id, base64=base64)
 
 #default page
-
 @app.route("/", methods=['GET'])
 def hello():
 	return render_template('hello.html', message='Welcome to Photoshare')
