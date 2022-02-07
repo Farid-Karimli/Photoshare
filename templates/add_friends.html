@@ -12,6 +12,15 @@
         border: 1px solid black;
         padding: 5px;
       }
+
+ .user-row {
+     display: flex;
+     flex-direction: row;
+ }
+
+ .user-row p {
+     margin: 1vw;
+ }
 </style>
 <div id="search">
     <form method="post" action="{{ url_for('add_friends') }}">
@@ -20,7 +29,21 @@
         <input type="submit" />
     </form>
  </div>
-<table>
+
+<section id="user">
+
+    {%  for row in data %}
+        <div class="user-row">
+            <p>{{row[0]}}<p>
+            <p>{{row[1]}}<p>
+            <p>{{row[2]}}<p>
+            <form method="post" action="{{ url_for('add_friends') }}">
+                <button type="submit" name="added_friend" value="{{ (row[1],row[2]) }}">Add Friend</button>
+            </form>
+        </div>
+    {%  endfor %}
+</section>
+{#<table>
   <thead>
     <tr>
         <th>Username</th>
@@ -34,9 +57,10 @@
                 <td>{{row[0]}}</td>
                 <td>{{row[1]}}</td>
                 <td>{{row[2]}}</td>
+
             </tr>
         {% endfor %}
     </tbody>
-</table>
+</table>#}
 </body>
 </html>

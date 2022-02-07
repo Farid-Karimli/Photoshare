@@ -163,7 +163,7 @@ def getUsersPhotos(uid):
 
 def getUserAlbums(uid):
 	cursor = conn.cursor()
-	cursor.execute(f"SELECT album_id,name,created,cover_img FROM Albums WHERE user = {uid}")
+	cursor.execute(f"SELECT album_id,album_name,date_created,cover_img FROM Albums WHERE owner = {uid}")
 	info_raw = cursor.fetchall()
 	return info_raw
 
@@ -241,15 +241,35 @@ def add_friends():
 		return render_template('add_friends.html', data=data)
 		
 	else:
-		cursor.execute("SELECT user_id, firstname, lastname FROM Users")
-		data = cursor.fetchall()
-		return render_template('add_friends.html', data=data)
+		return render_template('add_friends.html', data={})
 		
 	#The method is GET so we return a  HTML form to upload the a photo.
 	
 #end photo uploading code
+@app.route('/add_friend', methods=['POST'])
+@flask_login.login_required
+def add_friend():
+	cursor = conn.cursor()
+	if request.method == 'POST':
+		uid = getUserIdFromEmail(flask_login.current_user.id)
+		fullname = request.form.get('name')
+		print(fullname)
+		fullname = fullname.split()
+		cursor.execute('''SELECT user_id, firstname, lastname FROM Users WHERE firstname = %s and lastname = %s''',
+					   (fullname[0], fullname[1]))
+		data = cursor.fetchall()
+		render_template('add_friends.html', data=data)
+		existing_friends = cursor.execute('''SELECT user1, user2 FROM friends_with WHERE user1 = %s and user2 = %s''',
+										  (uid, data[0][0]))
+		if (existing_friends):
+			print("You are already friends with ... ")
+		else:
+			cursor.execute('''INSERT INTO friends_with (user1, user2) VALUES (%s, %s )''', (uid, data[0][0]))
+			conn.commit()
+		return render_template('add_friends.html', data=data)
 
-
+	else:
+		return render_template('add_friends.html', data={})
 
 
 @app.route('/delete', methods=['GET','POST'])
@@ -280,7 +300,7 @@ def create_album():
 		date = request.form.get('created')
 		cover_img_data = cover_img_file.read()
 		cursor = conn.cursor()
-		cursor.execute('''INSERT INTO Albums (user, name, created,cover_img) VALUES (%s, %s, %s, %s)''' ,(uid,album_name, date,cover_img_data))
+		cursor.execute('''INSERT INTO Albums (owner, album_name, date_created,cover_img) VALUES (%s, %s, %s, %s)''' ,(uid,album_name, date,cover_img_data))
 
 
 		conn.commit()
@@ -316,7 +336,7 @@ def albums():
 def album(id):
 	uid = getUserIdFromEmail(flask_login.current_user.id)
 	cursor = conn.cursor()
-	cursor.execute(f"SELECT name,created,cover_img FROM Albums WHERE album_id={id}")
+	cursor.execute(f"SELECT album_name,date_created,cover_img FROM Albums WHERE album_id={id}")
 	album = cursor.fetchall()[0]
 	cursor.execute(f'SELECT picture_id, imgdata,caption FROM Pictures WHERE album_id = {id}')
 	photos = cursor.fetchall()
