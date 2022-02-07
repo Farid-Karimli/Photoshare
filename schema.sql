@@ -12,8 +12,8 @@ CREATE TABLE Users (
     user_id int4  AUTO_INCREMENT,
     email varchar(255) UNIQUE,
     password varchar(255),
-    firstname char(20),
-    lastname char(20),
+    firstname char(20) NOT NULL,
+    lastname char(20) NOT NULL,
     birthdate DATE,
     gender char(10),
     hometown char(20),
@@ -80,6 +80,6 @@ CREATE TABLE has_tag(
 );
 
 
-INSERT INTO Users (email, password) VALUES ('test@bu.edu', 'test');
-INSERT INTO Users (email, password) VALUES ('test1@bu.edu', 'test');
+INSERT INTO Users (email, password, firstname, lastname) VALUES ('test@bu.edu', 'test','John','Doe');
+INSERT INTO Users (email, password,firstname, lastname) VALUES ('test1@bu.edu', 'test', 'Jane', 'Doe');
 
