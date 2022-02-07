@@ -174,6 +174,7 @@ def getUserIdFromEmail(email):
 	cursor.execute("SELECT user_id  FROM Users WHERE email = '{0}'".format(email))
 	return cursor.fetchone()[0]
 
+
 def isEmailUnique(email):
 	#use this to check if a email has already been registered
 	cursor = conn.cursor()
@@ -216,6 +217,40 @@ def upload_file(album_id):
 	else:
 		return render_template('upload.html',album_id=album_id)
 #end photo uploading code
+
+
+
+@app.route('/add_friends', methods=['GET', 'POST'])
+@flask_login.login_required
+def add_friends():
+	cursor = conn.cursor()
+	if request.method == 'POST':
+		uid = getUserIdFromEmail(flask_login.current_user.id)
+		fullname=request.form.get('name')
+		print(fullname)
+		fullname = fullname.split()
+		cursor.execute('''SELECT user_id, firstname, lastname FROM Users WHERE firstname = %s and lastname = %s''', (fullname[0], fullname[1]))
+		data = cursor.fetchall()
+		render_template('add_friends.html', data=data)
+		existing_friends = cursor.execute('''SELECT user1, user2 FROM friends_with WHERE user1 = %s and user2 = %s''', (uid,data[0][0]))
+		if(existing_friends):
+			print("You are already friends with ... ")
+		else:
+			cursor.execute('''INSERT INTO friends_with (user1, user2) VALUES (%s, %s )''' ,(uid, data[0][0]))
+		conn.commit()
+		return render_template('add_friends.html', data=data)
+		
+	else:
+		cursor.execute("SELECT user_id, firstname, lastname FROM Users")
+		data = cursor.fetchall()
+		return render_template('add_friends.html', data=data)
+		
+	#The method is GET so we return a  HTML form to upload the a photo.
+	
+#end photo uploading code
+
+
+
 
 @app.route('/delete', methods=['GET','POST'])
 @flask_login.login_required
@@ -297,3 +332,4 @@ if __name__ == "__main__":
 	#this is invoked when in the shell  you run
 	#$ python app.py
 	app.run(port=5000, debug=True)
+
