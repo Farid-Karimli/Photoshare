@@ -29,7 +29,7 @@
         <input type="submit" />
     </form>
  </div>
-
+{% if found %}
 <section id="user">
 
     {%  for row in data %}
@@ -37,12 +37,15 @@
             <p>{{row[0]}}<p>
             <p>{{row[1]}}<p>
             <p>{{row[2]}}<p>
-            <form method="post" action="{{ url_for('add_friends') }}">
-                <button type="submit" name="added_friend" value="{{ (row[1],row[2]) }}">Add Friend</button>
+            <form method="post" action="{{ url_for('add_friend') }}">
+                <button type="submit" name="added_friend" value="{{ row[0] }}">Add Friend</button>
             </form>
         </div>
     {%  endfor %}
 </section>
+{% else  %}
+    <h4> This user does not exist </h4>
+{% endif %}
 {#<table>
   <thead>
     <tr>

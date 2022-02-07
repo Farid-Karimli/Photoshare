@@ -167,7 +167,11 @@ def getUserAlbums(uid):
 	info_raw = cursor.fetchall()
 	return info_raw
 
-
+def getUserFriends(uid):
+	cursor = conn.cursor()
+	cursor.execute(f"SELECT user2 FROM friends_with WHERE user1 = {uid}")
+	info_raw = cursor.fetchall()
+	return info_raw
 
 def getUserIdFromEmail(email):
 	cursor = conn.cursor()
@@ -231,17 +235,13 @@ def add_friends():
 		fullname = fullname.split()
 		cursor.execute('''SELECT user_id, firstname, lastname FROM Users WHERE firstname = %s and lastname = %s''', (fullname[0], fullname[1]))
 		data = cursor.fetchall()
-		render_template('add_friends.html', data=data)
-		existing_friends = cursor.execute('''SELECT user1, user2 FROM friends_with WHERE user1 = %s and user2 = %s''', (uid,data[0][0]))
-		if(existing_friends):
-			print("You are already friends with ... ")
-		else:
-			cursor.execute('''INSERT INTO friends_with (user1, user2) VALUES (%s, %s )''' ,(uid, data[0][0]))
-		conn.commit()
-		return render_template('add_friends.html', data=data)
+		found = False
+		if data:
+			found = True
+		return render_template('add_friends.html', data=data,found=found)
 		
 	else:
-		return render_template('add_friends.html', data={})
+		return render_template('add_friends.html', data={},found=True)
 		
 	#The method is GET so we return a  HTML form to upload the a photo.
 	
@@ -250,26 +250,34 @@ def add_friends():
 @flask_login.login_required
 def add_friend():
 	cursor = conn.cursor()
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	data = {}
 	if request.method == 'POST':
-		uid = getUserIdFromEmail(flask_login.current_user.id)
-		fullname = request.form.get('name')
-		print(fullname)
-		fullname = fullname.split()
-		cursor.execute('''SELECT user_id, firstname, lastname FROM Users WHERE firstname = %s and lastname = %s''',
-					   (fullname[0], fullname[1]))
-		data = cursor.fetchall()
-		render_template('add_friends.html', data=data)
-		existing_friends = cursor.execute('''SELECT user1, user2 FROM friends_with WHERE user1 = %s and user2 = %s''',
-										  (uid, data[0][0]))
-		if (existing_friends):
-			print("You are already friends with ... ")
-		else:
-			cursor.execute('''INSERT INTO friends_with (user1, user2) VALUES (%s, %s )''', (uid, data[0][0]))
-			conn.commit()
-		return render_template('add_friends.html', data=data)
 
-	else:
-		return render_template('add_friends.html', data={})
+		friend_id = request.form.get('added_friend')[0]
+
+		print(friend_id)
+
+		cursor.execute('''SELECT user1, user2 FROM friends_with WHERE user1 = %s and user2 = %s''',
+					   (uid, friend_id))
+
+		existing_friends = cursor.fetchall()
+		print(f"existing_friends: {existing_friends}")
+
+		if existing_friends:
+			print(f"You are already friends with {friend_id} ")
+			return '''<p> You're already friends with this person </p>'''
+		else:
+			cursor.execute('''INSERT INTO friends_with (user1, user2) VALUES (%s, %s )''', (uid, friend_id))
+			conn.commit()
+			return render_template('friend.html', friends=getUserFriends(uid))
+
+
+@app.route('/friends', methods=['GET'])
+@flask_login.login_required
+def friend():
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	return render_template('friend.html', friends=getUserFriends(uid))
 
 
 @app.route('/delete', methods=['GET','POST'])
