@@ -264,21 +264,33 @@ def add_friend():
 
 		friend_id = request.form.get('added_friend')[0]
 
-		print(friend_id)
+		print("same", uid == friend_id)
 
-		cursor.execute('''SELECT user1, user2 FROM friends_with WHERE user1 = %s and user2 = %s''',
-					   (uid, friend_id))
+		if((int)(uid) == (int)(friend_id)):
+			print(f"You can't be friends with yourself. ")
+			return '''
+					<p>You can't be friends with yourself. </p>
+					<a href='/add_friends'>Try Again</a>
+					
+				'''
 
-		existing_friends = cursor.fetchall()
-		print(f"existing_friends: {existing_friends}")
-
-		if existing_friends:
-			print(f"You are already friends with {friend_id} ")
-			return '''<p> You're already friends with this person </p>'''
 		else:
-			cursor.execute('''INSERT INTO friends_with (user1, user2) VALUES (%s, %s )''', (uid, friend_id))
-			conn.commit()
-			return render_template('friend.html', friends=getUserFriends(uid))
+			cursor.execute('''SELECT user1, user2 FROM friends_with WHERE user1 = %s and user2 = %s''',
+						(uid, friend_id))
+
+			existing_friends = cursor.fetchall()
+			print(f"existing_friends: {existing_friends}")
+
+			if existing_friends:
+				print(f"You are already friends with {friend_id} ")
+				return '''
+						<p> You're already friends with this person  </p> 
+						<a href='/add_friends'>Try Again</a>
+						'''
+			else:
+				cursor.execute('''INSERT INTO friends_with (user1, user2) VALUES (%s, %s )''', (uid, friend_id))
+				conn.commit()
+				return render_template('friend.html', friends=getUserFriends(uid))
 
 
 
