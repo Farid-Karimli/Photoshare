@@ -24,16 +24,16 @@
             </div>
             <nav>
                 <ul>
+                    <li><a href='/'>Home</a></li>
                     <li><a href='/albums'>My albums</a></li>
                     {%  if not need_login %}
                         <li><a href='/logout'>Logout</a></li>
                     {%  endif %}
                     <li><a href='/friends'>Friends</a></li>
-                    <li><a href='/'>Home</a></li>
+
                 </ul>
             </nav>
-
-    </header>
+     </header>
     <h3>Your friends <a href="/add_friends">Add friends</a></h3>
     {%  for friend in friends %}
         <div class = "friend">
