@@ -1,0 +1,28 @@
+body,p {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+header {
+    display: flex;
+    flex-direction: row;
+}
+#logo h1 {
+    margin: 0;
+    display: inline;
+    position: relative;
+    top: -13%;
+}
+ul {
+    list-style: none;
+}
+li {
+    display: inline;
+    margin: 0 5vw;
+}
+#main, nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

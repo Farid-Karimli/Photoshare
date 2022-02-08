@@ -1,35 +1,69 @@
 <!-- author ben lawson (balawson@bu.edu) -->
-<!doctype html>
-{% if message %}
-  <h4>{{message}}!</h4>
-{% endif %}
-<title>Photoshare</title>
-{% if info %}
-  <h1>Welcome back, {{ info['firstname'] + ' ' + info['lastname'] }}!</h1>
-{% endif %}
+<!DOCTYPE html>
 
-{#
-{% if photos %}
-<h2>Here are your photos</h2>
-    <ul>
-    {% for photo in photos %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Album</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
+</head>
+<style>
+    header {
+        display: flex;
+        flex-direction: row;
+    }
+    #logo h1 {
+        margin: 0;
+        display: inline;
+        position: relative;
+        top: -13%;
+    }
+    ul {
+        list-style: none;
+    }
+    li {
+        display: inline;
+        margin: 0 5vw;
+    }
+    #main, nav {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+</style>
+<body>
+<header>
+    <div id="logo">
+        <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
+        <h1>Photoshare</h1>
+    </div>
+    <nav>
+        <ul>
+            <li><a href='/albums'>My albums</a></li>
+            {%  if not need_login %}
+                <li><a href='/logout'>Logout</a></li>
+            {%  endif %}
+            <li><a href='/friends'>Friends</a></li>
+            <li><a href='/'>Home</a></li>
+        </ul>
+    </nav>
 
-        <li>{{photo[2]}}<br>
-        <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}' widht="100px" height="100px"/></li>
-    {% endfor %}
-    </ul>
-{% endif %}
-#}
+</header>
+<section id="main">
+    {% if message %}
+        <h4 id="message">{{message}}!</h4>
+    {% endif %}
+    <title>Photoshare</title>
+    {% if info %}
+        <h1>Welcome back, {{ info['firstname'] + ' ' + info['lastname'] }}!</h1>
+    {% endif %}
 
-{% if need_login %}
-  <p>You should <a href='/login'>login!</a></p>
-{% endif %}
 
-<ul>
-<li><a href='/albums'>My albums</a></li>
-{%  if not need_login %}
-    <li><a href='/logout'>Logout</a></li>
-{%  endif %}
-<li><a href='/friends'>Friends</a></li>
-<li><a href='/'>Home</a></li>
-</ul>
+    {% if need_login %}
+        <p>You should <a href='/login'>login!</a></p>
+    {% endif %}
+</section>
+
+
+</body>
+</html>

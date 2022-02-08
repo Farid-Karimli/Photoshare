@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Photo</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
+
 </head>
 <style>
     body,p {
@@ -29,6 +31,22 @@
     }
 </style>
 <body>
+    <header>
+            <div id="logo">
+                <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
+                <h1>Photoshare</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href='/albums'>My albums</a></li>
+                    {%  if not need_login %}
+                        <li><a href='/logout'>Logout</a></li>
+                    {%  endif %}
+                    <li><a href='/friends'>Friends</a></li>
+                    <li><a href='/'>Home</a></li>
+                </ul>
+            </nav>
+     </header>
     <div id="photo-outer">
         <img src='data:image/jpg;base64, {{ base64.b64encode(data[0]).decode("ascii") }}' width="300px" height="300px"/>
         <p>{{ data[1] }}</p>

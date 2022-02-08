@@ -3,18 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <title>Friends</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
+
 </head>
 <style>
     .friend {
         display: flex;
         flex-direction: row;
+
     }
     .friend p {
         margin: 1vw;
     }
 </style>
 <body>
-    <h3>Your friends<a href="/add_friends">Add friends</a></h3>
+    <header>
+            <div id="logo">
+                <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
+                <h1>Photoshare</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href='/albums'>My albums</a></li>
+                    {%  if not need_login %}
+                        <li><a href='/logout'>Logout</a></li>
+                    {%  endif %}
+                    <li><a href='/friends'>Friends</a></li>
+                    <li><a href='/'>Home</a></li>
+                </ul>
+            </nav>
+
+    </header>
+    <h3>Your friends <a href="/add_friends">Add friends</a></h3>
     {%  for friend in friends %}
         <div class = "friend">
             <p>{{ friend[1] }}</p>
