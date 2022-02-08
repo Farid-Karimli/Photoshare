@@ -21,15 +21,15 @@
 {% endif %}
 #}
 
-{% if message is none %}
+{% if need_login %}
   <p>You should <a href='/login'>login!</a></p>
-
 {% endif %}
 
 <ul>
 <li><a href='/albums'>My albums</a></li>
-<li><a href='/logout'>Logout</a></li>
-<li><a href="/friends">Friends</a></li>
-<li><a href='/add_friends'>Add Friends</a></li>
+{%  if not need_login %}
+    <li><a href='/logout'>Logout</a></li>
+{%  endif %}
+<li><a href='/friends'>Friends</a></li>
 <li><a href='/'>Home</a></li>
 </ul>

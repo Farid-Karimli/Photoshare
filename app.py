@@ -13,7 +13,7 @@ import flask
 from flask import Flask, Response, request, render_template, redirect, url_for
 from flaskext.mysql import MySQL
 import flask_login
-
+import datetime
 #for image uploading
 import os, base64
 
@@ -92,7 +92,7 @@ def login():
 			   <form action='login' method='POST'>
 				<input type='text' name='email' id='email' placeholder='email'></input>
 				<input type='password' name='password' id='password' placeholder='Enter your password'></input>
-				<input type='submit' name='submit'></input>
+				<input type='submit' name='submit' value="Log in"></input>
 			   </form></br>
 		   <a href='/'>Home</a>
 			   '''
@@ -116,7 +116,7 @@ def login():
 @app.route('/logout')
 def logout():
 	flask_login.logout_user()
-	return render_template('hello.html', message='Logged out')
+	return render_template('hello.html', message='Logged out',need_login=True)
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
@@ -169,8 +169,24 @@ def getUserAlbums(uid):
 
 def getUserFriends(uid):
 	cursor = conn.cursor()
-	cursor.execute(f"SELECT user2 FROM friends_with WHERE user1 = {uid}")
+	cursor.execute(f'''SELECT user1,email,firstname,lastname,user2
+						FROM photoshare.Users U
+						LEFT JOIN friends_with F
+						ON U.user_id = F.user2
+						WHERE user1 = {uid}''')
 	info_raw = cursor.fetchall()
+	print(info_raw)
+	return info_raw
+
+def getPhotoComments(photo_id):
+	cursor = conn.cursor()
+	cursor.execute(f'''SELECT firstname,lastname,text,owner_id
+						FROM photoshare.Users U
+						CROSS JOIN photoshare.Comments C
+						ON U.user_id = C.owner_id
+						WHERE picture_id = {photo_id}; ''')
+	info_raw = cursor.fetchall()
+	print(info_raw)
 	return info_raw
 
 def getUserIdFromEmail(email):
@@ -273,6 +289,7 @@ def add_friend():
 			return render_template('friend.html', friends=getUserFriends(uid))
 
 
+
 @app.route('/friends', methods=['GET'])
 @flask_login.login_required
 def friend():
@@ -350,10 +367,36 @@ def album(id):
 	photos = cursor.fetchall()
 	return render_template("album.html", photos=photos, album=album, album_id=id, base64=base64)
 
+@app.route("/album/<album_id>/photo/<photo_id>",methods=['GET','POST'])
+@flask_login.login_required
+def photo(album_id,photo_id):
+	cursor = conn.cursor()
+	cursor.execute('''SELECT imgdata,caption FROM Pictures WHERE album_id=%s and picture_id = %s''',
+				   (album_id, photo_id))
+	data = cursor.fetchall()[0]
+
+	if request.method=="POST":
+		uid = getUserIdFromEmail(flask_login.current_user.id)
+		comment = request.form.get('comment')
+		todays_date = str(datetime.date.today())
+		cursor.execute('''INSERT INTO Comments (text, date_created, picture_id,owner_id) VALUES (%s, %s, %s, %s)''' ,(comment,todays_date, photo_id,uid))
+		conn.commit()
+		return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id))
+
+
+	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id))
+
+
+
+
 #default page
 @app.route("/", methods=['GET'])
 def hello():
-	return render_template('hello.html', message='Welcome to Photoshare')
+	if flask_login.user_logged_in:
+		need_login = False
+	else:
+		need_login = True
+	return render_template('hello.html', message='Welcome to Photoshare',need_login=need_login)
 
 
 if __name__ == "__main__":

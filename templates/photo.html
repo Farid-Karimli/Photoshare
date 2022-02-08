@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Photo</title>
+</head>
+<style>
+    body,p {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .comment {
+        display: flex;
+        flex-direction: row;
+    }
+    #photo-outer {
+        font-size: 1.5vw;
+    }
+    #comments {
+
+    }
+    #comments-view {
+        border: 1px solid black;
+        background-color: lightgrey;
+    }
+    .comment p {
+        margin: 0.5vw;
+    }
+</style>
+<body>
+    <div id="photo-outer">
+        <img src='data:image/jpg;base64, {{ base64.b64encode(data[0]).decode("ascii") }}' width="300px" height="300px"/>
+        <p>{{ data[1] }}</p>
+    </div>
+    <div id="comments">
+        <h3>Comments</h3>
+        {% if comments %}
+            <div id="comments-view">
+                 {% for comment in comments %}
+                     {# comment = (firstname,lastname,comment text,user id) #}
+                     <div class="comment">
+                        <p>{{ comment[0] }} {{ comment[1] }}</p>
+                        <p>{{ comment[2] }}</p>
+                     </div>
+                 {% endfor %}
+            </div>
+        {% endif %}
+
+        <form action="/album/{{ album_id }}/photo/{{ photo_id }}" method="post">
+            <label>
+                <input type="text" name="comment" value="" placeholder="Enter your comment here: "/>
+            </label>
+            <input type="submit" value="Comment"/>
+        </form>
+
+    </div>
+</body>
+</html>

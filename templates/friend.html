@@ -4,10 +4,26 @@
     <meta charset="UTF-8">
     <title>Friends</title>
 </head>
+<style>
+    .friend {
+        display: flex;
+        flex-direction: row;
+    }
+    .friend p {
+        margin: 1vw;
+    }
+</style>
 <body>
-    <h3>Your friends</h3>
+    <h3>Your friends<a href="/add_friends">Add friends</a></h3>
     {%  for friend in friends %}
-        <p>{{friend[0]}}</p>
+        <div class = "friend">
+            <p>{{ friend[1] }}</p>
+            <p>{{ friend[2] }}</p>
+            <p>{{ friend[3] }}</p>
+            <p>{{ friend[4]}}</p>
+        </div>
     {%  endfor %}
+
+
 </body>
 </html>
