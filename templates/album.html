@@ -5,6 +5,11 @@
     <title>Album</title>
 </head>
 <body>
+    <ul>
+        <li><a href='/'>Home</a></li>
+        <li><a href='/albums'>My albums</a></li>
+        <li><a href='/logout'>Logout</a></li>
+    </ul>
     <h4>Photos of {{ album[0] }}</h4>
     {% if photos %}
         {% for photo in photos %}
@@ -14,12 +19,11 @@
                 <a href="{{ album_id }}/photo/{{ photo[0] }}"><img src='data:image/jpg;base64, {{ base64.b64encode(photo[1]).decode("ascii") }}' width="100px" height="100px"/></a>
                 <p>{{ photo[2] }}</p>
             </div>
-
-
         {% endfor %}
         <p><a href="/upload/{{ album_id }}"> Add more </a></p>
     {% else %}
         <h2> There are no photos in this album yet. <a href="/upload/{{ album_id }}"> Add some </a> </h2>
     {% endif %}
 </body>
+
 </html>
