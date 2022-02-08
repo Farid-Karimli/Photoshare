@@ -22,16 +22,16 @@
             </div>
             <nav>
                 <ul>
+                    <li><a href='/'>Home</a></li>
                     <li><a href='/albums'>My albums</a></li>
                     {%  if not need_login %}
                         <li><a href='/logout'>Logout</a></li>
                     {%  endif %}
                     <li><a href='/friends'>Friends</a></li>
-                    <li><a href='/'>Home</a></li>
+
                 </ul>
             </nav>
-
-        </header>
+     </header>
     <h4>Photos of {{ album[0] }}</h4>
 
         {% if photos %}
