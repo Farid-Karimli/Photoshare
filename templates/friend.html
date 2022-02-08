@@ -7,6 +7,12 @@
 
 </head>
 <style>
+    #friends-view {
+        display: flex;
+        flex-direction: column;
+        background-color: lightgray;
+        border: 1px solid black;
+    }
     .friend {
         display: flex;
         flex-direction: row;
@@ -15,6 +21,8 @@
     .friend p {
         margin: 1vw;
     }
+
+
 </style>
 <body>
     <header>
@@ -34,15 +42,18 @@
                 </ul>
             </nav>
      </header>
-    <h3>Your friends <a href="/add_friends">Add friends</a></h3>
-    {%  for friend in friends %}
-        <div class = "friend">
-            <p>{{ friend[1] }}</p>
-            <p>{{ friend[2] }}</p>
-            <p>{{ friend[3] }}</p>
-            <p>{{ friend[4]}}</p>
-        </div>
-    {%  endfor %}
+    <h3>Your friends </h3>
+    <div id="friends-view">
+        {%  for friend in friends %}
+            <div class = "friend">
+                <p>{{ friend[1] }}</p>
+                <p>{{ friend[2] }}</p>
+                <p>{{ friend[3] }}</p>
+                <p>{{ friend[4]}}</p>
+            </div>
+        {%  endfor %}
+    </div>
+    <h4><a href="/add_friends">Add friends</a></h4>
 
 
 </body>

@@ -8,11 +8,22 @@
 </head>
 <style>
     #photos-view {
+        margin-top: 5vh;
         width: 30%;
         display: flex;
         flex-direction: row;
         justify-content: space-between;
     }
+    #album-cover * {
+        text-align: center;
+    }
+    #divider {
+        width: 30%;
+        height: 2vh;
+        border-bottom: 1px solid var(--main-accent-color);
+    }
+
+
 </style>
 <body>
     <header>
@@ -33,7 +44,12 @@
             </nav>
      </header>
     <h4>Photos of {{ album[0] }}</h4>
-
+    <div id="album-cover">
+        <img src='data:image/jpg;base64, {{ base64.b64encode(album[2]).decode("ascii") }}' width="300px" height="300px"/>
+        <h4>Date Created: {{ album[1] }}</h4>
+    </div>
+    <div id="divider">
+    </div>
         {% if photos %}
             <div id="photos-view">
             {% for photo in photos %}

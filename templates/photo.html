@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Photo</title>
     <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
-
+    <script src="https://kit.fontawesome.com/28d30f508e.js" crossorigin="anonymous"></script>
 </head>
 <style>
     body,p {
@@ -28,6 +28,14 @@
     }
     .comment p {
         margin: 0.5vw;
+    }
+
+    #button-icon {
+        background-color: transparent;
+        border: 1px solid transparent;
+    }
+    #button-icon:hover {
+        color: brown;
     }
 </style>
 <body>
@@ -61,8 +69,9 @@
                      <div class="comment">
                         <p>{{ comment[0] }} {{ comment[1] }}</p>
                         <p>{{ comment[2] }}</p>
-                         <button form="comment-form" name="delete" type="submit" value="{{ comment[4] }}">Delete comment</button>
-
+                        {% if user==comment[3] %}
+                            <button id='button-icon' form="comment-form" name="delete" type="submit" value="{{ comment[4] }}"><i class="fas fa-times"></i></button>
+                        {% endif %}
                      </div>
                  {% endfor %}
             </div>

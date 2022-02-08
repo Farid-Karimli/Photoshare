@@ -367,6 +367,7 @@ def album(id):
 @app.route("/album/<album_id>/photo/<photo_id>",methods=['GET','POST'])
 @flask_login.login_required
 def photo(album_id,photo_id):
+	uid=getUserIdFromEmail(flask_login.current_user.id)
 	cursor = conn.cursor()
 	cursor.execute('''SELECT imgdata,caption FROM Pictures WHERE album_id=%s and picture_id = %s''',
 				   (album_id, photo_id))
@@ -388,10 +389,10 @@ def photo(album_id,photo_id):
 			cursor.execute(f'''DELETE FROM Comments WHERE comment_id={to_delete}''')
 			conn.commit()
 
-		return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id))
+		return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid)
 
 
-	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id))
+	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id),user=uid)
 
 
 
