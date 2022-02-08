@@ -2,7 +2,7 @@
 
 To get the skeleton running, open a terminal and do the following:
 
-	1. enter the skeleton folder 'cd path/to/skeleton'
+	1. enter the skeleton folder 'cd <path/to/repository>'
 	
 	2. install all necessary packages 'pip install -r requirements.txt' (or use pip3)
 	
