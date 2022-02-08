@@ -173,7 +173,7 @@ def getUserFriends(uid):
 
 def getPhotoComments(photo_id):
 	cursor = conn.cursor()
-	cursor.execute(f'''SELECT firstname,lastname,text,owner_id
+	cursor.execute(f'''SELECT firstname,lastname,text,owner_id,comment_id
 						FROM photoshare.Users U
 						CROSS JOIN photoshare.Comments C
 						ON U.user_id = C.owner_id
@@ -375,9 +375,19 @@ def photo(album_id,photo_id):
 	if request.method=="POST":
 		uid = getUserIdFromEmail(flask_login.current_user.id)
 		comment = request.form.get('comment')
-		todays_date = str(datetime.date.today())
-		cursor.execute('''INSERT INTO Comments (text, date_created, picture_id,owner_id) VALUES (%s, %s, %s, %s)''' ,(comment,todays_date, photo_id,uid))
-		conn.commit()
+		to_delete = request.form.get('delete')
+		print(f'comment: {comment}')
+		print(f'to_delete: {to_delete}')
+		if comment:
+			print('Adding a comment')
+			todays_date = str(datetime.date.today())
+			cursor.execute('''INSERT INTO Comments (text, date_created, picture_id,owner_id) VALUES (%s, %s, %s, %s)''' ,(comment,todays_date, photo_id,uid))
+			conn.commit()
+		elif to_delete:
+			print('deleting a comment')
+			cursor.execute(f'''DELETE FROM Comments WHERE comment_id={to_delete}''')
+			conn.commit()
+
 		return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id))
 
 

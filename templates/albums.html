@@ -6,6 +6,14 @@
     <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
 
 </head>
+<style>
+    #albums-view {
+        width: 30%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+</style>
 <body>
     <header>
             <div id="logo">
@@ -25,14 +33,16 @@
             </nav>
      </header>
     {% if albums %}
+        <div id="albums-view">
         {% for album in albums %}
-            <div>
+            <div id="album">
                 <!-- Album is of form: ( ( album name, date created, cover image data) , ... )-->
                 <p> <a href="/album/{{ album[0] }}"> {{ album[1] }} </a> </p>
                 <img src='data:image/jpg;base64, {{ base64.b64encode(album[3]).decode("ascii") }}' width="100px" height="100px"/></li>
 
             </div>
         {% endfor %}
+        </div>
         <h4><a href="/upload-album"> Add more </a></h4>
     {% else %}
         <h2> You don't have any albums! <a href="/upload-album"> Create one.</a></h2>
