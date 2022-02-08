@@ -36,6 +36,7 @@ CREATE TABLE Albums(
     album_name char(20),
     date_created DATE,
     owner int4,
+    cover_img longblob,
     FOREIGN KEY(owner) REFERENCES Users(user_id),
     CONSTRAINT albums_pk PRIMARY KEY (album_id)
 );
