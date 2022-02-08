@@ -1,6 +1,8 @@
 <!-- author ben lawson balawson@bu.edu -->
 <head>
     <title>Create an account!</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
+
 </head>
 {%if not supress%}
 <h1> Email already in use! Use another one or <a href="/login">login</a></h1>
@@ -19,7 +21,8 @@
                 <input type="email" name="email" /><br />
                 <label for="password">Enter password:</label>
                 <input type="password" name="password" /><br />
-
+                <label for="birthdate">Birth date:</label>
+                <input type="date" id="start" name="birthdate" required ><br/>
                 <input type="submit" />
             </form>
          </div>

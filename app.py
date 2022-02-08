@@ -205,15 +205,7 @@ def isEmailUnique(email):
 		return True
 #end login code
 
-@app.route('/profile')
-@flask_login.login_required
-def protected():
-	uid = getUserIdFromEmail(flask_login.current_user.id)
-	cursor = conn.cursor()
-	cursor.execute(f"SELECT firstname,lastname FROM Users WHERE user_id = {uid}")
-	info_raw = cursor.fetchall()[0]
-	info = {'firstname':info_raw[0],'lastname': info_raw[1]}
-	return render_template('hello.html', name=flask_login.current_user.id,photos=getUsersPhotos(uid),base64=base64,info=info)
+
 
 #begin photo uploading code
 # photos uploaded using base64 encoding so they can be directly embeded in HTML
@@ -388,15 +380,19 @@ def photo(album_id,photo_id):
 
 
 
-
+@app.route('/')
+@flask_login.login_required
+def protected():
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	cursor = conn.cursor()
+	cursor.execute(f"SELECT firstname,lastname FROM Users WHERE user_id = {uid}")
+	info_raw = cursor.fetchall()[0]
+	info = {'firstname':info_raw[0],'lastname': info_raw[1]}
+	return render_template('hello.html', name=flask_login.current_user.id,info=info)
 #default page
 @app.route("/", methods=['GET'])
 def hello():
-	if flask_login.user_logged_in:
-		need_login = False
-	else:
-		need_login = True
-	return render_template('hello.html', message='Welcome to Photoshare',need_login=need_login)
+	return render_template('hello.html', message='Welcome to Photoshare')
 
 
 if __name__ == "__main__":
