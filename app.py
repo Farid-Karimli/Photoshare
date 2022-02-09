@@ -343,8 +343,6 @@ def create_album():
 			   </form></br>
 			   '''
 
-
-
 @app.route("/albums", methods=['GET','POST'])
 @flask_login.login_required
 def albums():
@@ -354,7 +352,6 @@ def albums():
 	return render_template("albums.html", albums=album_list, base64=base64)
 
 @app.route("/album/<id>",methods=['GET'])
-@flask_login.login_required
 def album(id):
 	uid = getUserIdFromEmail(flask_login.current_user.id)
 	cursor = conn.cursor()
@@ -365,7 +362,6 @@ def album(id):
 	return render_template("album.html", photos=photos, album=album, album_id=id, base64=base64)
 
 @app.route("/album/<album_id>/photo/<photo_id>",methods=['GET','POST'])
-@flask_login.login_required
 def photo(album_id,photo_id):
 	uid=getUserIdFromEmail(flask_login.current_user.id)
 	cursor = conn.cursor()
@@ -377,15 +373,12 @@ def photo(album_id,photo_id):
 		uid = getUserIdFromEmail(flask_login.current_user.id)
 		comment = request.form.get('comment')
 		to_delete = request.form.get('delete')
-		print(f'comment: {comment}')
-		print(f'to_delete: {to_delete}')
+
 		if comment:
-			print('Adding a comment')
 			todays_date = str(datetime.date.today())
 			cursor.execute('''INSERT INTO Comments (text, date_created, picture_id,owner_id) VALUES (%s, %s, %s, %s)''' ,(comment,todays_date, photo_id,uid))
 			conn.commit()
 		elif to_delete:
-			print('deleting a comment')
 			cursor.execute(f'''DELETE FROM Comments WHERE comment_id={to_delete}''')
 			conn.commit()
 
@@ -394,7 +387,15 @@ def photo(album_id,photo_id):
 
 	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id),user=uid)
 
-
+@app.route('/explore')
+def explore():
+	cursor = conn.cursor()
+	cursor.execute('''SELECT cover_img, album_name, album_id
+						FROM Albums 
+						CROSS JOIN Users
+						ON Albums.owner = Users.user_id''')
+	albums = cursor.fetchall()
+	return render_template('explore.html',albums=albums,base64=base64)
 
 @app.route('/')
 @flask_login.login_required

@@ -2,16 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My Albums</title>
+    <title>Explore</title>
     <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
 
 </head>
 <style>
     #albums-view {
-        width: 30%;
+        width: 50%;
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+    }
+
+    #album {
+        text-align: center;
     }
 </style>
 <body>
@@ -20,33 +24,29 @@
                 <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
                 <h1>Photoshare</h1>
             </div>
-             <nav>
+            <nav>
                 <ul>
-                    <li><a href='/' >Home</a></li>
-                    <li><a href='/explore'>Explore</a></li>
-                    <li><a href='/albums' id="active">My albums</a></li>
+                    <li><a href='/'>Home</a></li>
+                    <li><a href='/explore' id="active">Explore</a></li>
+                    <li><a href='/albums'>My albums</a></li>
                     <li><a href='/friends'>Friends</a></li>
                     {%  if not need_login %}
                         <li><a href='/logout'>Logout</a></li>
                     {%  endif %}
                 </ul>
             </nav>
-     </header>
-    {% if albums %}
-        <div id="albums-view">
+    </header>
+    <h2>Explore Albums</h2>
+    <div id="albums-view">
+
         {% for album in albums %}
+            {# album = (cover_img, album_name, album_id) #}
             <div id="album">
-                <!-- Album is of form: ( ( album name, date created, cover image data) , ... )-->
-                <p> <a href="/album/{{ album[0] }}"> {{ album[1] }} </a> </p>
-                <img src='data:image/jpg;base64, {{ base64.b64encode(album[3]).decode("ascii") }}' width="100px" height="100px"/></li>
+                <img src='data:image/jpg;base64, {{ base64.b64encode(album[0]).decode("ascii") }}' width="100px" height="100px"/>
+                <p><a href="/album/{{ album[2] }}">{{ album[1] }}</a></p>
 
             </div>
         {% endfor %}
-        </div>
-        <h4><a href="/upload-album"> Add more </a></h4>
-    {% else %}
-        <h2> You don't have any albums! <a href="/upload-album"> Create one.</a></h2>
-    {%  endif %}
-
+    </div>
 </body>
 </html>
