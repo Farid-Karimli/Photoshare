@@ -6,7 +6,7 @@
 </head>
 <body>
     <h2> Which photo would you like to delete? </h2>
-    <form action="delete" method="POST">
+    <form action="/delete/{{ album }}" method="POST">
         {% for photo in photos %}
         <input type="radio" id="radio-button" name="photo" value="{{ photo[1] }}">
         <label for="html"><img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}' width="100px" height="100px" alt=""/></label>

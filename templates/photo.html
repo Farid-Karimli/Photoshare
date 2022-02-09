@@ -37,6 +37,14 @@
     #button-icon:hover {
         color: brown;
     }
+    #likes {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+    }
+    #likes p {
+        margin: 0 0 0 1vw;
+    }
 </style>
 <body>
     <header>
@@ -61,7 +69,12 @@
      </header>
     <div id="photo-outer">
         <img src='data:image/jpg;base64, {{ base64.b64encode(data[0]).decode("ascii") }}' width="300px" height="300px"/>
-        <p>{{ data[1] }}</p>
+        <p>"{{ data[1] }}"</p>
+        <div id="likes">
+            <button id='button-icon' class='like' form="comment-form" name="like" type="submit" value="{{ photo_id }}"><i class="fas fa-heart fa-lg"></i></button>
+            <p> {{ data[2] }} like(s) </p>
+        </div>
+
     </div>
     <div id="comments">
         <h3>Comments</h3>

@@ -173,6 +173,14 @@ def getUserAlbums(uid):
 	info_raw = cursor.fetchall()
 	return info_raw
 
+def getAlbumPhotos(album_id):
+	cursor = conn.cursor()
+	cursor.execute(f"SELECT imgdata,picture_id FROM Pictures WHERE album_id = {album_id}")
+	info_raw = cursor.fetchall()
+	return info_raw
+
+
+
 def getUserFriends(uid):
 	cursor = conn.cursor()
 	cursor.execute(f'''SELECT user1,email,firstname,lastname,user2, contribution_score
@@ -310,20 +318,18 @@ def friend():
 @app.route('/delete/<album_id>', methods=['GET','POST'])
 @flask_login.login_required
 def delete_photo(album_id):
-
+	uid = getUserIdFromEmail(flask_login.current_user.id)
 	if request.method == "POST":
 		print(request.form.get('photo'))
 		photo_id = request.form.get('photo')
 		cursor = conn.cursor()
-		cursor.execute(f"DELETE FROM Pictures WHERE picture_id={photo_id}")
+		cursor.execute('DELETE FROM Pictures WHERE picture_id=%s and album_id=%s',(photo_id,album_id))
 		conn.commit()
-		uid = getUserIdFromEmail(flask_login.current_user.id)
 		return flask.redirect(flask.url_for('album',id=album_id))
 
-	uid=getUserIdFromEmail(flask_login.current_user.id)
-	photos = getUsersPhotos(uid)
-	return render_template("delete_photos.html",photos=photos,base64=base64)
 
+	photos = getAlbumPhotos(album_id)
+	return render_template("delete_photos.html",photos=photos,base64=base64,album=album_id)
 
 
 @app.route("/upload-album", methods=['GET','POST'])
@@ -381,15 +387,14 @@ def album(id):
 def photo(album_id,photo_id):
 	uid=getUserIdFromEmail(flask_login.current_user.id)
 	cursor = conn.cursor()
-	cursor.execute('''SELECT imgdata,caption FROM Pictures WHERE album_id=%s and picture_id = %s''',
+	cursor.execute('''SELECT imgdata,caption,likes FROM Pictures WHERE album_id=%s and picture_id = %s''',
 				   (album_id, photo_id))
 	data = cursor.fetchall()[0]
-
 	if request.method=="POST":
 		uid = getUserIdFromEmail(flask_login.current_user.id)
 		comment = request.form.get('comment')
 		to_delete = request.form.get('delete')
-
+		like = request.form.get('like')
 		if comment:
 			todays_date = str(datetime.date.today())
 			cursor.execute('''INSERT INTO Comments (text, date_created, picture_id,owner_id) VALUES (%s, %s, %s, %s)''' ,(comment,todays_date, photo_id,uid))
@@ -397,6 +402,12 @@ def photo(album_id,photo_id):
 		elif to_delete:
 			cursor.execute(f'''DELETE FROM Comments WHERE comment_id={to_delete}''')
 			conn.commit()
+		elif like:
+			cursor.execute(f'''UPDATE Pictures SET likes=likes+1 WHERE picture_id={photo_id}''')
+			conn.commit()
+			cursor.execute('''SELECT imgdata,caption,likes FROM Pictures WHERE album_id=%s and picture_id = %s''',
+						   (album_id, photo_id))
+			data = cursor.fetchall()[0]
 
 		return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid)
 
