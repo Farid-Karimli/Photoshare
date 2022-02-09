@@ -1,69 +1,71 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Add a friend!</title>
-    </head>
+<head>
+    <title>Add a friend!</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
+    <script src="https://kit.fontawesome.com/28d30f508e.js" crossorigin="anonymous"></script>
+
+    <style>
+
+        td {
+            width: 150px;
+            text-align: center;
+            border: 1px solid black;
+            padding: 5px;
+        }
+
+        .user-row {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .user-row p {
+            margin: 1vw;
+        }
+    </style>
+</head>
 <body>
-<style>
- 
- td {
-        width: 150px;
-        text-align: center;
-        border: 1px solid black;
-        padding: 5px;
-      }
+    <header>
+            <div id="logo">
+                <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
+                <h1>Photoshare</h1>
+            </div>
+             <nav>
+                <ul>
+                    <li><a href='/'  >Home</a></li>
+                    <li><a href='/explore' >Explore</a></li>
+                    <li><a href='/albums'>My albums</a></li>
+                    <li><a href='/friends' id="active">Friends</a></li>
+                    {%  if not need_login %}
+                        <li><a href='/logout'>Logout</a></li>
+                    {%  endif %}
+                </ul>
+            </nav>
+     </header>
+    <div id="search">
+        <form method="post" action="{{ url_for('add_friends') }}">
+            <p>Search You Friend on Photoshare</p>
+            <label for='name'></label><input type='text' name='name' id='name' placeholder='Friend Name'/><br/>
+            <input type="submit" value="Search"/>
+        </form>
+    </div>
+    {% if found %}
+        <section id="user">
 
- .user-row {
-     display: flex;
-     flex-direction: row;
- }
+            {%  for row in data %}
+                <div class="user-row">
+                    <p>{{row[0]}}<p>
+                    <p>{{row[1]}}<p>
+                    <p>{{row[2]}}<p>
+                    <form method="post" action="{{ url_for('add_friend') }}">
+                        <button type="submit" name="added_friend" value="{{ row[0] }}">Add Friend</button>
+                    </form>
+                </div>
+            {%  endfor %}
+        </section>
+    {% else  %}
+        <h4> This user does not exist </h4>
+    {% endif %}
 
- .user-row p {
-     margin: 1vw;
- }
-</style>
-<div id="search">
-    <form method="post" action="{{ url_for('add_friends') }}">
-        <p>Search You Friend on Photoshare</p>
-        <input type='text' name='name' id='name' placeholder='Friend Name'/><br/>
-        <input type="submit" />
-    </form>
- </div>
-{% if found %}
-<section id="user">
-
-    {%  for row in data %}
-        <div class="user-row">
-            <p>{{row[0]}}<p>
-            <p>{{row[1]}}<p>
-            <p>{{row[2]}}<p>
-            <form method="post" action="{{ url_for('add_friend') }}">
-                <button type="submit" name="added_friend" value="{{ row[0] }}">Add Friend</button>
-            </form>
-        </div>
-    {%  endfor %}
-</section>
-{% else  %}
-    <h4> This user does not exist </h4>
-{% endif %}
-{#<table>
-  <thead>
-    <tr>
-        <th>Username</th>
-        <th>First Name</th>
-        <th>Last Name</th>
-    </tr>
-    </thead>    
-    <tbody>
-     {% for row in data %}    
-            <tr>
-                <td>{{row[0]}}</td>
-                <td>{{row[1]}}</td>
-                <td>{{row[2]}}</td>
-
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>#}
 </body>
 </html>

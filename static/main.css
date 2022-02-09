@@ -35,6 +35,9 @@ a:hover {
     color: var(--tertiary-color);
 }
 
+a#active {
+    text-decoration: underline;
+}
 #logo h1 {
     margin: 0;
     display: inline;
