@@ -247,6 +247,7 @@ def upload_file(album_id):
 
 
 
+
 @app.route('/add_friends', methods=['GET', 'POST'])
 @flask_login.login_required
 def add_friends():
@@ -414,6 +415,20 @@ def photo(album_id,photo_id):
 
 	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id),user=uid)
 
+@app.route("/profile/upload",methods=['GET','POST'])
+@flask_login.login_required
+def upload_profile_pic():
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	if request.method=='POST':
+		imgfile = request.files['photo']
+		photo_data = imgfile.read()
+		cursor = conn.cursor()
+		cursor.execute('UPDATE Users SET profile_img=%s WHERE user_id=%s',(photo_data,uid))
+		conn.commit()
+		return flask.redirect(flask.url_for('profile'))
+
+	return render_template('profile_upload.html',user=uid)
+
 
 
 @app.route("/profile", methods=['GET'])
@@ -421,7 +436,8 @@ def photo(album_id,photo_id):
 def profile():
 	uid = getUserIdFromEmail(flask_login.current_user.id)
 	userInfo = getUserInfo(uid)
-	return render_template("profile.html", userInfo = userInfo)
+	print(f'userinfo {userInfo}')
+	return render_template("profile.html", userInfo = userInfo,base64=base64)
 
 @app.route("/edit_profile", methods=['GET', "POST"])
 @flask_login.login_required
@@ -443,6 +459,7 @@ def edit_profile():
 		print("3",editUserInfo(info_raw, info_map, current_password))
 		return flask.redirect(flask.url_for('profile'))
 	return render_template("edit_profile.html", supress = True)
+
 @app.route('/explore')
 def explore():
 	cursor = conn.cursor()

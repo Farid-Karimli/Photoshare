@@ -15,6 +15,14 @@
     .profile p {
         margin: 1vw;
     }
+    #picture {
+        border: 1px solid black;
+    }
+    #profile-view {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+    }
 </style>
 <body>
     <header>
@@ -36,18 +44,29 @@
                 </ul>
             </nav>
      </header>
-    <h2>{{userInfo[3]}}  {{userInfo[4]}} <a href="/edit_profile">Edit Profile</a></h3>
-        <div class = "profile">
-            <p> Email: {{ userInfo[1]}}</p>
-            <p> First Name: {{ userInfo[3] }} </p>
-            <p> Last Name: {{ userInfo[4] }}</p>
-            <p> Birthday: {{ userInfo[5]}}</p>
-            <p> Gender: {{ userInfo[6]}}</p>
-            <p> Hometown:{{ userInfo[7]}}</p>
-            <p> Contribution Score: {{ userInfo[8]}}</p>
+    <section id="main">
+        <h2>{{userInfo[3]}}  {{userInfo[4]}} <a href="/edit_profile">Edit Profile</a></h2>
 
+        <div id="profile-view">
+
+            <div id="picture">
+                {% if userInfo[9] %}
+                    <img id='profile_image' src='data:image/jpg;base64, {{ base64.b64encode(userInfo[9]).decode("ascii") }}' width="300px" height="300px"/>
+                {%  endif %}
+                <p><a href="/profile/upload">Update profile picture</a></p>
+            </div>
+
+
+            <div class = "profile">
+                <p> Email: {{ userInfo[1]}}</p>
+                <p> First Name: {{ userInfo[3] }} </p>
+                <p> Last Name: {{ userInfo[4] }}</p>
+                <p> Birthday: {{ userInfo[5]}}</p>
+                <p> Gender: {{ userInfo[6]}}</p>
+                <p> Hometown:{{ userInfo[7]}}</p>
+                <p> Contribution Score: {{ userInfo[8]}}</p>
+            </div>
         </div>
-        
-
+    </section>
 </body>
 </html>

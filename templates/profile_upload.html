@@ -1,34 +1,17 @@
-<!-- author ben lawson (balawson@bu.edu) -->
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Album</title>
+    <title>Upload</title>
     <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
+
 </head>
 <style>
-    header {
-        display: flex;
-        flex-direction: row;
+    #upload-view {
+        margin: 2vh;
     }
-    #logo h1 {
-        margin: 0;
-        display: inline;
-        position: relative;
-        top: -13%;
-    }
-    ul {
-        list-style: none;
-    }
-    li {
-        display: inline;
-        margin: 0 5vw;
-    }
-    #main, nav {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+    form * {
+        margin: 1vh;
     }
 </style>
 <body>
@@ -47,27 +30,19 @@
                     {%  if not need_login %}
                         <li><a href='/logout'>Logout</a></li>
                     {%  endif %}
-
-
-
                 </ul>
             </nav>
-     </header>
-<section id="main">
-    {% if message %}
-        <h4 id="message">{{message}}!</h4>
-    {% endif %}
-    <title>Photoshare</title>
-    {% if info %}
-        <h1>Welcome back, {{ info['firstname'] + ' ' + info['lastname'] }}!</h1>
-    {% endif %}
-
-
-    {% if need_login %}
-        <p>You should <a href='/login'>login!</a></p>
-    {% endif %}
-</section>
-
+    </header>
+    <section id='main'>
+        <div id="upload-view">
+{#            <img src="{{url_for('static',filename='download.png')}}"/>#}
+            <form method="post" enctype="multipart/form-data" action="/profile/upload">
+                    <label for="photo">Select new profile photo:</label>
+                    <input type="file" name="photo" required='true' /><br />
+                    <input type="submit" value="Upload" />
+            </form>
+        </div>
+    </section>
 
 </body>
 </html>
