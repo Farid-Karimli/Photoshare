@@ -2,27 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Friends</title>
+    <title>Profile</title>
     <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
 
 </head>
 <style>
-    #friends-view {
+    .profile {
         display: flex;
         flex-direction: column;
-        background-color: lightgray;
-        border: 1px solid black;
-    }
-    .friend {
-        display: flex;
-        flex-direction: row;
 
     }
-    .friend p {
+    .profile p {
         margin: 1vw;
     }
-
-
 </style>
 <body>
     <header>
@@ -30,34 +22,31 @@
                 <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
                 <h1>Photoshare</h1>
             </div>
-             <nav>
+            <nav>
                 <ul>
                     <li><a href='/'>Home</a></li>
-                    <li><a href='/' id="active">Explore</a></li>
                     <li><a href='/albums'>My albums</a></li>
-                    <li><a href='/friends' id="active">Friends</a></li>
                     {%  if not need_login %}
                         <li><a href='/logout'>Logout</a></li>
                     {%  endif %}
-
                     <li><a href='/friends'>Friends</a></li>
                     <li><a href='/profile'>Profile</a></li>
-
 
                 </ul>
             </nav>
      </header>
-    <h3>Your friends <a href="/add_friends">Add friends</a></h3>
-    {%  for friend in friends %}
-        <div class = "friend">
-            <p>{{ friend[1] }}</p>
-            <p>{{ friend[2] }}</p>
-            <p>{{ friend[3] }}</p>
-            <p>{{ friend[4]}}</p>
-            <p>{{ friend[5]}}</p>
-        </div>
-    {%  endfor %}
+    <h2>{{userInfo[3]}}  {{userInfo[4]}} <a href="/edit_profile">Edit Profile</a></h3>
+        <div class = "profile">
+            <p> Email: {{ userInfo[1]}}</p>
+            <p> First Name: {{ userInfo[3] }} </p>
+            <p> Last Name: {{ userInfo[4] }}</p>
+            <p> Birthday: {{ userInfo[5]}}</p>
+            <p> Gender: {{ userInfo[6]}}</p>
+            <p> Hometown:{{ userInfo[7]}}</p>
+            <p> Contribution Score: {{ userInfo[8]}}</p>
 
+        </div>
+        
 
 </body>
 </html>

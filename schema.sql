@@ -1,3 +1,4 @@
+drop database if exists photoshare;
 CREATE DATABASE IF NOT EXISTS photoshare;
 USE photoshare;
 DROP TABLE IF EXISTS Pictures CASCADE;
@@ -17,6 +18,7 @@ CREATE TABLE Users (
     birthdate DATE,
     gender char(10),
     hometown char(20),
+    contribution_score int4 DEFAULT 0,
     CONSTRAINT users_pk PRIMARY KEY (user_id)
 );
 
@@ -34,10 +36,10 @@ CREATE TABLE Pictures
 CREATE TABLE Albums(
 	album_id int4 AUTO_INCREMENT,
     album_name char(20),
-    date_created DATE,
+    date_created DATE DEFAULT (DATE_FORMAT(NOW(), '%m-%d-%y')),
     owner int4,
     cover_img longblob,
-    FOREIGN KEY(owner) REFERENCES Users(user_id),
+    FOREIGN KEY(owner) REFERENCES Users(user_id) ON DELETE CASCADE,
     CONSTRAINT albums_pk PRIMARY KEY (album_id)
 );
 
@@ -50,19 +52,19 @@ CREATE TABLE Tags(
 CREATE TABLE Comments(
     comment_id int4 AUTO_INCREMENT,
     text char(50),
-    date_created DATE,
+    date_created DATE DEFAULT (DATE_FORMAT(NOW(), '%m-%d-%y')),
     picture_id int4,
     owner_id int4,
-    FOREIGN KEY(picture_id) REFERENCES Pictures(picture_id),
-    FOREIGN KEY(owner_id) REFERENCES Users(user_id),
+    FOREIGN KEY(picture_id) REFERENCES Pictures(picture_id) ON DELETE CASCADE,
+    FOREIGN KEY(owner_id) REFERENCES Users(user_id) ON DELETE CASCADE,
     CONSTRAINT comments_pk PRIMARY KEY (comment_id)
 );
 
 ALTER TABLE Pictures
     ADD FOREIGN KEY(album_id) 
-    REFERENCES Albums(album_id),
+    REFERENCES Albums(album_id) ON DELETE CASCADE,
     ADD FOREIGN KEY(user_id) 
-    REFERENCES Users(user_id);
+    REFERENCES Users(user_id) ON DELETE CASCADE;
 
 CREATE TABLE friends_with(
 	user1 int4,
@@ -83,4 +85,16 @@ CREATE TABLE has_tag(
 
 INSERT INTO Users (email, password, firstname, lastname) VALUES ('test@bu.edu', 'test','John','Doe');
 INSERT INTO Users (email, password,firstname, lastname) VALUES ('test1@bu.edu', 'test', 'Jane', 'Doe');
+
+select * from pictures;
+
+select COUNT(*) from users where user_id = 1;
+
+DELETE FROM Pictures WHERE picture_id=1;
+DELETE FROM Pictures WHERE picture_id=1;
+UPDATE Users SET contribution_score = 10 WHERE user_id = 2;
+
+INSERT INTO Users (email, password,firstname, lastname) VALUES ('test2@bu.edu', 'test', 'Jane', 'Doe');
+
+
 

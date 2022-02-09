@@ -16,6 +16,7 @@ import flask_login
 import datetime
 #for image uploading
 import os, base64
+import datetime
 
 mysql = MySQL()
 app = Flask(__name__)
@@ -47,12 +48,24 @@ class User(flask_login.UserMixin):
 
 def getUserInfo(uid):
 	cursor = conn.cursor()
-	cursor.execute(f"SELECT firstname,lastname FROM Users WHERE user_id = {uid}")
+	cursor.execute(f"SELECT * FROM Users WHERE user_id = {uid}")
 	info_raw = cursor.fetchall()[0]
-	info = {'firstname': info_raw[0], 'lastname': info_raw[1]}
-	return info
+	return info_raw
 
+def editUserInfo(info_raw, info_map, old_pass):
+	if(info_map[2] != "" and info_map[9] != old_pass):
+		return render_template('edit_profile.html', incorrect_pass= True, supress = True)
 
+	for i in range(len(info_raw)):
+		if(info_map[i] == ''):
+			info_map[i] = info_raw[i]
+	
+	cursor.execute('''UPDATE users SET password = %s, firstname = %s, lastname = %s, birthdate = %s,\
+					gender = %s, hometown = %s  where user_id = %s ''',\
+					(info_map[2], info_map[3], info_map[4], info_map[5], info_map[6], info_map[7], info_map[0]))
+	
+	conn.commit()
+	return getUserInfo(info_raw[0])
 
 @login_manager.user_loader
 def user_loader(email):
@@ -162,7 +175,7 @@ def getUserAlbums(uid):
 
 def getUserFriends(uid):
 	cursor = conn.cursor()
-	cursor.execute(f'''SELECT user1,email,firstname,lastname,user2
+	cursor.execute(f'''SELECT user1,email,firstname,lastname,user2, contribution_score
 						FROM photoshare.Users U
 						LEFT JOIN friends_with F
 						ON U.user_id = F.user2
@@ -216,6 +229,7 @@ def upload_file(album_id):
 		photo_data =imgfile.read()
 		cursor = conn.cursor()
 		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption,album_id) VALUES (%s, %s, %s, %s )''' ,(photo_data,uid, caption,album_id))
+		cursor.execute(f"UPDATE Users SET contribution_score = contribution_score+1 WHERE user_id = {uid};")
 		conn.commit()
 		return flask.redirect(flask.url_for('album',id=album_id))
 	#The method is GET so we return a  HTML form to upload the a photo.
@@ -244,9 +258,8 @@ def add_friends():
 	else:
 		return render_template('add_friends.html', data={},found=True)
 		
-	#The method is GET so we return a  HTML form to upload the a photo.
-	
-#end photo uploading code
+
+
 @app.route('/add_friend', methods=['POST'])
 @flask_login.login_required
 def add_friend():
@@ -294,22 +307,24 @@ def friend():
 	return render_template('friend.html', friends=getUserFriends(uid))
 
 
-@app.route('/delete', methods=['GET','POST'])
+@app.route('/delete/<album_id>', methods=['GET','POST'])
 @flask_login.login_required
-def delete_photo():
+def delete_photo(album_id):
 
 	if request.method == "POST":
 		print(request.form.get('photo'))
 		photo_id = request.form.get('photo')
 		cursor = conn.cursor()
-		cursor.execute(f'DELETE FROM Pictures WHERE picture_id={photo_id}')
+		cursor.execute(f"DELETE FROM Pictures WHERE picture_id={photo_id}")
 		conn.commit()
 		uid = getUserIdFromEmail(flask_login.current_user.id)
-		return render_template('hello.html', name=flask_login.current_user.id, message='Photo uploaded!', photos=getUsersPhotos(uid),base64=base64)
+		return flask.redirect(flask.url_for('album',id=album_id))
 
 	uid=getUserIdFromEmail(flask_login.current_user.id)
 	photos = getUsersPhotos(uid)
 	return render_template("delete_photos.html",photos=photos,base64=base64)
+
+
 
 @app.route("/upload-album", methods=['GET','POST'])
 @flask_login.login_required
@@ -319,10 +334,10 @@ def create_album():
 
 		album_name = request.form.get('name')
 		cover_img_file = request.files['cover_img']
-		date = request.form.get('created')
+		#date = request.form.get('created')
 		cover_img_data = cover_img_file.read()
 		cursor = conn.cursor()
-		cursor.execute('''INSERT INTO Albums (owner, album_name, date_created,cover_img) VALUES (%s, %s, %s, %s)''' ,(uid,album_name, date,cover_img_data))
+		cursor.execute('''INSERT INTO Albums (owner, album_name,cover_img) VALUES ( %s, %s, %s)''' ,(uid,album_name,cover_img_data))
 
 
 		conn.commit()
@@ -335,13 +350,14 @@ def create_album():
 				
 				<label for="cover_img">Select cover image:</label>
                 <input type="file" name="cover_img" required='true' /><br />
-                
-                				
-				<input type='date' name='created'/>
 				
 				<input type='submit' name='submit' value="Create"></input>
 			   </form></br>
 			   '''
+
+
+
+
 
 @app.route("/albums", methods=['GET','POST'])
 @flask_login.login_required
@@ -387,6 +403,35 @@ def photo(album_id,photo_id):
 
 	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id),user=uid)
 
+
+
+@app.route("/profile", methods=['GET'])
+@flask_login.login_required
+def profile():
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	userInfo = getUserInfo(uid)
+	return render_template("profile.html", userInfo = userInfo)
+
+@app.route("/edit_profile", methods=['GET', "POST"])
+@flask_login.login_required
+def edit_profile():
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	if request.method=="POST":
+		info_raw = getUserInfo(uid)
+		old_password=request.form.get('old_password')
+		password=request.form.get('password')
+		firstname=request.form.get('firstname')
+		lastname=request.form.get('lastname')
+		birthdate= request.form.get('birthdate')
+		hometown = request.form.get('hometown')
+		gender = request.form.get('gender')
+		info_map = [info_raw[0], info_raw[1], password, firstname, lastname, birthdate, gender, hometown, info_raw[8], old_password]
+		print("1", info_raw)
+		print("2", info_map)
+		current_password = info_raw[2]
+		print("3",editUserInfo(info_raw, info_map, current_password))
+		return flask.redirect(flask.url_for('profile'))
+	return render_template("edit_profile.html", supress = True)
 @app.route('/explore')
 def explore():
 	cursor = conn.cursor()
@@ -396,6 +441,7 @@ def explore():
 						ON Albums.owner = Users.user_id''')
 	albums = cursor.fetchall()
 	return render_template('explore.html',albums=albums,base64=base64)
+
 
 @app.route('/')
 @flask_login.login_required
