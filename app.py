@@ -88,14 +88,7 @@ def new_page_function():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 	if flask.request.method == 'GET':
-		return '''
-			   <form action='login' method='POST'>
-				<input type='text' name='email' id='email' placeholder='email'></input>
-				<input type='password' name='password' id='password' placeholder='Enter your password'></input>
-				<input type='submit' name='submit' value="Log in"></input>
-			   </form></br>
-		   <a href='/'>Home</a>
-			   '''
+		return render_template('login.html')
 	#The request method is POST (page is recieving data)
 	email = flask.request.form['email']
 	cursor = conn.cursor()
@@ -180,7 +173,7 @@ def getUserFriends(uid):
 
 def getPhotoComments(photo_id):
 	cursor = conn.cursor()
-	cursor.execute(f'''SELECT firstname,lastname,text,owner_id
+	cursor.execute(f'''SELECT firstname,lastname,text,owner_id,comment_id
 						FROM photoshare.Users U
 						CROSS JOIN photoshare.Comments C
 						ON U.user_id = C.owner_id
@@ -205,15 +198,7 @@ def isEmailUnique(email):
 		return True
 #end login code
 
-@app.route('/profile')
-@flask_login.login_required
-def protected():
-	uid = getUserIdFromEmail(flask_login.current_user.id)
-	cursor = conn.cursor()
-	cursor.execute(f"SELECT firstname,lastname FROM Users WHERE user_id = {uid}")
-	info_raw = cursor.fetchall()[0]
-	info = {'firstname':info_raw[0],'lastname': info_raw[1]}
-	return render_template('hello.html', name=flask_login.current_user.id,photos=getUsersPhotos(uid),base64=base64,info=info)
+
 
 #begin photo uploading code
 # photos uploaded using base64 encoding so they can be directly embeded in HTML
@@ -272,21 +257,33 @@ def add_friend():
 
 		friend_id = request.form.get('added_friend')[0]
 
-		print(friend_id)
+		print("same", uid == friend_id)
 
-		cursor.execute('''SELECT user1, user2 FROM friends_with WHERE user1 = %s and user2 = %s''',
-					   (uid, friend_id))
+		if((int)(uid) == (int)(friend_id)):
+			print(f"You can't be friends with yourself. ")
+			return '''
+					<p>You can't be friends with yourself. </p>
+					<a href='/add_friends'>Try Again</a>
+					
+				'''
 
-		existing_friends = cursor.fetchall()
-		print(f"existing_friends: {existing_friends}")
-
-		if existing_friends:
-			print(f"You are already friends with {friend_id} ")
-			return '''<p> You're already friends with this person </p>'''
 		else:
-			cursor.execute('''INSERT INTO friends_with (user1, user2) VALUES (%s, %s )''', (uid, friend_id))
-			conn.commit()
-			return render_template('friend.html', friends=getUserFriends(uid))
+			cursor.execute('''SELECT user1, user2 FROM friends_with WHERE user1 = %s and user2 = %s''',
+						(uid, friend_id))
+
+			existing_friends = cursor.fetchall()
+			print(f"existing_friends: {existing_friends}")
+
+			if existing_friends:
+				print(f"You are already friends with {friend_id} ")
+				return '''
+						<p> You're already friends with this person  </p> 
+						<a href='/add_friends'>Try Again</a>
+						'''
+			else:
+				cursor.execute('''INSERT INTO friends_with (user1, user2) VALUES (%s, %s )''', (uid, friend_id))
+				conn.commit()
+				return render_template('friend.html', friends=getUserFriends(uid))
 
 
 
@@ -370,6 +367,7 @@ def album(id):
 @app.route("/album/<album_id>/photo/<photo_id>",methods=['GET','POST'])
 @flask_login.login_required
 def photo(album_id,photo_id):
+	uid=getUserIdFromEmail(flask_login.current_user.id)
 	cursor = conn.cursor()
 	cursor.execute('''SELECT imgdata,caption FROM Pictures WHERE album_id=%s and picture_id = %s''',
 				   (album_id, photo_id))
@@ -378,25 +376,39 @@ def photo(album_id,photo_id):
 	if request.method=="POST":
 		uid = getUserIdFromEmail(flask_login.current_user.id)
 		comment = request.form.get('comment')
-		todays_date = str(datetime.date.today())
-		cursor.execute('''INSERT INTO Comments (text, date_created, picture_id,owner_id) VALUES (%s, %s, %s, %s)''' ,(comment,todays_date, photo_id,uid))
-		conn.commit()
-		return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id))
+		to_delete = request.form.get('delete')
+		print(f'comment: {comment}')
+		print(f'to_delete: {to_delete}')
+		if comment:
+			print('Adding a comment')
+			todays_date = str(datetime.date.today())
+			cursor.execute('''INSERT INTO Comments (text, date_created, picture_id,owner_id) VALUES (%s, %s, %s, %s)''' ,(comment,todays_date, photo_id,uid))
+			conn.commit()
+		elif to_delete:
+			print('deleting a comment')
+			cursor.execute(f'''DELETE FROM Comments WHERE comment_id={to_delete}''')
+			conn.commit()
+
+		return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid)
 
 
-	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id))
+	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id),user=uid)
 
 
 
-
+@app.route('/')
+@flask_login.login_required
+def protected():
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	cursor = conn.cursor()
+	cursor.execute(f"SELECT firstname,lastname FROM Users WHERE user_id = {uid}")
+	info_raw = cursor.fetchall()[0]
+	info = {'firstname':info_raw[0],'lastname': info_raw[1]}
+	return render_template('hello.html', name=flask_login.current_user.id,info=info)
 #default page
 @app.route("/", methods=['GET'])
 def hello():
-	if flask_login.user_logged_in:
-		need_login = False
-	else:
-		need_login = True
-	return render_template('hello.html', message='Welcome to Photoshare',need_login=need_login)
+	return render_template('hello.html', message='Welcome to Photoshare')
 
 
 if __name__ == "__main__":

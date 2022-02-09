@@ -3,26 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <title>Friends</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
+
 </head>
 <style>
+    #friends-view {
+        display: flex;
+        flex-direction: column;
+        background-color: lightgray;
+        border: 1px solid black;
+    }
     .friend {
         display: flex;
         flex-direction: row;
+
     }
     .friend p {
         margin: 1vw;
     }
+
+
 </style>
 <body>
-    <h3>Your friends<a href="/add_friends">Add friends</a></h3>
-    {%  for friend in friends %}
-        <div class = "friend">
-            <p>{{ friend[1] }}</p>
-            <p>{{ friend[2] }}</p>
-            <p>{{ friend[3] }}</p>
-            <p>{{ friend[4]}}</p>
-        </div>
-    {%  endfor %}
+    <header>
+            <div id="logo">
+                <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
+                <h1>Photoshare</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href='/'>Home</a></li>
+                    <li><a href='/albums'>My albums</a></li>
+                    {%  if not need_login %}
+                        <li><a href='/logout'>Logout</a></li>
+                    {%  endif %}
+                    <li><a href='/friends'>Friends</a></li>
+
+                </ul>
+            </nav>
+     </header>
+    <h3>Your friends </h3>
+    <div id="friends-view">
+        {%  for friend in friends %}
+            <div class = "friend">
+                <p>{{ friend[1] }}</p>
+                <p>{{ friend[2] }}</p>
+                <p>{{ friend[3] }}</p>
+                <p>{{ friend[4]}}</p>
+            </div>
+        {%  endfor %}
+    </div>
+    <h4><a href="/add_friends">Add friends</a></h4>
 
 
 </body>

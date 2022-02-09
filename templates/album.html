@@ -3,23 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <title>Album</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
+
 </head>
+<style>
+    #photos-view {
+        margin-top: 5vh;
+        width: 30%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    #album-cover * {
+        text-align: center;
+    }
+    #divider {
+        width: 30%;
+        height: 2vh;
+        border-bottom: 1px solid var(--main-accent-color);
+    }
+
+
+</style>
 <body>
-    <h4>Photos of {{ album[0] }}</h4>
-    {% if photos %}
-        {% for photo in photos %}
-                {# album = name,created,cover_img #}
-                {# photo = picture_id, imgdata, caption #}
-            <div>
-                <a href="{{ album_id }}/photo/{{ photo[0] }}"><img src='data:image/jpg;base64, {{ base64.b64encode(photo[1]).decode("ascii") }}' width="100px" height="100px"/></a>
-                <p>{{ photo[2] }}</p>
+    <header>
+            <div id="logo">
+                <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
+                <h1>Photoshare</h1>
             </div>
+            <nav>
+                <ul>
+                    <li><a href='/'>Home</a></li>
+                    <li><a href='/albums'>My albums</a></li>
+                    {%  if not need_login %}
+                        <li><a href='/logout'>Logout</a></li>
+                    {%  endif %}
+                    <li><a href='/friends'>Friends</a></li>
+
+                </ul>
+            </nav>
+     </header>
+    <h4>Photos of {{ album[0] }}</h4>
+    <div id="album-cover">
+        <img src='data:image/jpg;base64, {{ base64.b64encode(album[2]).decode("ascii") }}' width="300px" height="300px"/>
+        <h4>Date Created: {{ album[1] }}</h4>
+    </div>
+    <div id="divider">
+    </div>
+        {% if photos %}
+            <div id="photos-view">
+            {% for photo in photos %}
+                    {# album = name,created,cover_img #}
+                    {# photo = picture_id, imgdata, caption #}
+                <div id="photo">
+                    <a href="{{ album_id }}/photo/{{ photo[0] }}"><img src='data:image/jpg;base64, {{ base64.b64encode(photo[1]).decode("ascii") }}' width="100px" height="100px"/></a>
+                    <p>{{ photo[2] }}</p>
+                </div>
+            {% endfor %}
+            </div>
+            <p><a href="/upload/{{ album_id }}"> Add more </a></p>
+        {% else %}
+            <h2> There are no photos in this album yet. <a href="/upload/{{ album_id }}"> Add some </a> </h2>
+        {% endif %}
 
 
-        {% endfor %}
-        <p><a href="/upload/{{ album_id }}"> Add more </a></p>
-    {% else %}
-        <h2> There are no photos in this album yet. <a href="/upload/{{ album_id }}"> Add some </a> </h2>
-    {% endif %}
 </body>
+
 </html>

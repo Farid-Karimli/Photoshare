@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
+
+</head>
+<body>
+    <header>
+            <div id="logo">
+                <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
+                <h1>Photoshare</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href='/'>Home</a></li>
+                </ul>
+            </nav>
+     </header>
+    <section id="main">
+        <form action='login' method='POST'>
+				<input type='text' name='email' id='email' placeholder='email'></input>
+				<input type='password' name='password' id='password' placeholder='Enter your password'></input>
+				<input type='submit' name='submit' value="Log in"></input>
+        </form></br>
+        <a href='/register'>Register</a>
+
+    </section>
+</body>
+</html>
