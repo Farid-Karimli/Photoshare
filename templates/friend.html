@@ -36,18 +36,18 @@
                     <li><a href='/' id="active">Explore</a></li>
                     <li><a href='/albums'>My albums</a></li>
                     <li><a href='/friends' id="active">Friends</a></li>
+                    <li><a href='/profile'>Profile</a></li>
                     {%  if not need_login %}
                         <li><a href='/logout'>Logout</a></li>
                     {%  endif %}
 
-                    <li><a href='/friends'>Friends</a></li>
-                    <li><a href='/profile'>Profile</a></li>
+
 
 
                 </ul>
             </nav>
      </header>
-    <h3>Your friends <a href="/add_friends">Add friends</a></h3>
+    <h3>Your friends </h3>
     {%  for friend in friends %}
         <div class = "friend">
             <p>{{ friend[1] }}</p>
@@ -57,6 +57,7 @@
             <p>{{ friend[5]}}</p>
         </div>
     {%  endfor %}
+    <h3><a href="/add_friends">Add friends</a></h3>
 
 
 </body>
