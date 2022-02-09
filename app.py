@@ -52,7 +52,6 @@ def getUserInfo(uid):
 	info_raw = cursor.fetchall()[0]
 	return info_raw
 
-# new infor is a [], same order as user table, missing the last col contribution score
 def editUserInfo(info_raw, info_map, old_pass):
 	if(info_map[2] != "" and info_map[9] != old_pass):
 		return render_template('edit_profile.html', incorrect_pass= True, supress = True)
@@ -388,15 +387,23 @@ def photo(album_id,photo_id):
 	if request.method=="POST":
 		uid = getUserIdFromEmail(flask_login.current_user.id)
 		comment = request.form.get('comment')
-		todays_date = str(datetime.date.today())
-		cursor.execute('''INSERT INTO Comments (text, date_created, picture_id,owner_id) VALUES (%s, %s, %s, %s)''' ,(comment,todays_date, photo_id,uid))
-		cursor.execute(f"UPDATE Users SET contribution_score = contribution_score+1 WHERE user_id = {uid};")
-		conn.commit()
-		return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id))
+		to_delete = request.form.get('delete')
+		print(f'comment: {comment}')
+		print(f'to_delete: {to_delete}')
+		if comment:
+			print('Adding a comment')
+			todays_date = str(datetime.date.today())
+			cursor.execute('''INSERT INTO Comments (text, date_created, picture_id,owner_id) VALUES (%s, %s, %s, %s)''' ,(comment,todays_date, photo_id,uid))
+			conn.commit()
+		elif to_delete:
+			print('deleting a comment')
+			cursor.execute(f'''DELETE FROM Comments WHERE comment_id={to_delete}''')
+			conn.commit()
+
+		return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid)
 
 
-	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id))
-
+	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id),user=uid)
 
 
 @app.route("/profile", methods=['GET'])
