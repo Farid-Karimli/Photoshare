@@ -11,7 +11,8 @@ CREATE TABLE likes(
     
     PRIMARY KEY(user_id, photo_id),
     FOREIGN KEY(user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY(photo_id) REFERENCES Pictures(photo_id) ON DELETE CASCADE
+    FOREIGN KEY(photo_id) REFERENCES Pictures(picture_id) ON DELETE CASCADE
 
 );
+
 
