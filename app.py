@@ -427,9 +427,20 @@ def photo(album_id,photo_id,comment_filter=None):
 		elif like:
 			if(pic_owner == uid):
 				return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid, dismiss_like = True)
-			cursor.execute(f'''UPDATE Pictures SET likes=likes+1 WHERE picture_id={photo_id}''')
-			cursor.execute('''UPDATE Users SET contribution_score = (contribution_score + 1) WHERE user_id = %s''',(uid))
-			conn.commit()
+			cursor.execute('''SELECT count(*) FROM likes WHERE user_id = %s and photo_id = %s  ''', (uid, photo_id))
+			liked_earlier = cursor.fetchall()[0][0]
+			print(liked_earlier)
+			if(liked_earlier):
+				print(uid,photo_id)
+				cursor.execute('''DELETE FROM likes WHERE user_id = %s and photo_id = %s''', (uid, photo_id))
+				cursor.execute(f'''UPDATE Pictures SET likes=likes-1 WHERE picture_id={photo_id}''')
+				cursor.execute('''UPDATE Users SET contribution_score = (contribution_score - 1) WHERE user_id = %s''',(uid))
+				conn.commit()
+			else:
+				cursor.execute(f'''UPDATE Pictures SET likes=likes+1 WHERE picture_id={photo_id}''')
+				cursor.execute('''UPDATE Users SET contribution_score = (contribution_score + 1) WHERE user_id = %s''',(uid))
+				cursor.execute('''INSERT INTO likes (user_id, photo_id) VALUES (%s, %s)''', (uid, photo_id))
+				conn.commit()
 		elif filter:
 			print(f'Filtering... by filter: {filter}')
 			return flask.redirect(url_for('photo', album_id=album_id, photo_id=photo_id,comment_filter=filter))
