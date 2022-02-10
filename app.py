@@ -338,6 +338,7 @@ def delete_photo(album_id):
 		photo_id = request.form.get('photo')
 		cursor = conn.cursor()
 		cursor.execute('DELETE FROM Pictures WHERE picture_id=%s and album_id=%s',(photo_id,album_id))
+		cursor.execute('''UPDATE Users SET contribution_score = (contribution_score - 1) WHERE user_id = %s''',(uid))
 		conn.commit()
 		return flask.redirect(flask.url_for('album',id=album_id))
 
@@ -423,6 +424,7 @@ def photo(album_id,photo_id,comment_filter=None):
 
 		elif to_delete:
 			cursor.execute(f'''DELETE FROM Comments WHERE comment_id={to_delete}''')
+			cursor.execute('''UPDATE Users SET contribution_score = (contribution_score - 1) WHERE user_id = %s''',(uid))
 			conn.commit()
 		elif like:
 			if(pic_owner == uid):
@@ -459,6 +461,7 @@ def upload_profile_pic():
 		photo_data = imgfile.read()
 		cursor = conn.cursor()
 		cursor.execute('UPDATE Users SET profile_img=%s WHERE user_id=%s',(photo_data,uid))
+		cursor.execute('''UPDATE Users SET contribution_score = (contribution_score + 1) WHERE user_id = %s''',(uid))
 		conn.commit()
 		return flask.redirect(flask.url_for('profile'))
 
