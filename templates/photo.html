@@ -1,5 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+    <script>
+        
+        function like_overlay(on) {
+            if(on){
+                document.getElementById("overlay_like").style.width = "100%";
+            }
+            else{
+                document.getElementById("overlay_like").style.width = "0%";
+
+            }
+        };
+
+        function comment_overlay(on) {
+            if(on){
+                document.getElementById("overlay_comment").style.width = "100%";
+            }
+            else{
+                document.getElementById("overlay_comment").style.width = "0%";
+
+            }
+        };
+        
+        
+    </script>
 <head>
     <meta charset="UTF-8">
     <title>Photo</title>
@@ -45,6 +69,28 @@
     #likes p {
         margin: 0 0 0 1vw;
     }
+    .overlay {
+        height: 100%;
+        width: 0;
+        position: fixed;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        background-color: rgb(0,0,0);
+        background-color: rgba(0,0,0, 0.5);
+        overflow-x: hidden;
+        transition: 0.5s;
+        cursor: pointer;
+        }
+    .overlay-content {
+        position: relative;
+        top: 25%;
+        width: 100%;
+        text-align: center;
+        margin-top: 30px;
+        color: white;
+    }
+    
 </style>
 <body>
     <header>
@@ -68,28 +114,33 @@
             </nav>
      </header>
 
-    {% if dismiss_comment %}
-        <script>
-            alert("You can't comment on your photo");
+
+    <div id="overlay_like" class="overlay" onclick="like_overlay(false)">
+        <div class="overlay-content">
+            <h1>You can't like the photos you posted.</h1>
+        </div>
+    </div>
+
+    <div id="overlay_comment" class="overlay" onclick="comment_overlay(false)">
+        <div class="overlay-content">
+            <h1>You can't comment on the photos you posted.</h1>
+        </div>
+    </div>
         
-        </script>
-    {%endif %}
 
     {% if dismiss_like %}
         <script>
-            alert("You can't like your photo");
-        
+            like_overlay(true)
         </script>
     {%endif %}
 
-    {% if already_liked %}
+
+    {% if dismiss_comment %}
         <script>
-            alert("You can't like this photo again");
-        
+            comment_overlay(true)
         </script>
     {%endif %}
-
-    
+        
 
     <div id="photo-outer">
         <img src='data:image/jpg;base64, {{ base64.b64encode(data[0]).decode("ascii") }}' width="300px" height="300px"/>
@@ -130,5 +181,7 @@
         </form>
 
     </div>
+
+    
 </body>
 </html>
