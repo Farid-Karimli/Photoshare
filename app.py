@@ -59,7 +59,8 @@ def editUserInfo(info_raw, info_map, old_pass):
 	for i in range(len(info_raw)):
 		if(info_map[i] == ''):
 			info_map[i] = info_raw[i]
-	
+
+	cursor = conn.cursor()
 	cursor.execute('''UPDATE users SET password = %s, firstname = %s, lastname = %s, birthdate = %s,\
 					gender = %s, hometown = %s  where user_id = %s ''',\
 					(info_map[2], info_map[3], info_map[4], info_map[5], info_map[6], info_map[7], info_map[0]))
@@ -192,13 +193,31 @@ def getUserFriends(uid):
 	print(info_raw)
 	return info_raw
 
-def getPhotoComments(photo_id):
+def getPhotoComments(photo_id,comment_filter=None):
 	cursor = conn.cursor()
+	info_raw = None
+
+	"""if filter is not None:
+		print('Filtered')
+		cursor.execute('''SELECT firstname,lastname,text,owner_id,comment_id
+								FROM photoshare.Users U
+								CROSS JOIN photoshare.Comments C
+								ON U.user_id = C.owner_id
+								WHERE picture_id = %s and text=\'%s\'''',(photo_id,comment_filter))
+		info_raw = cursor.fetchall()
+	else:
+		cursor.execute(f'''SELECT firstname,lastname,text,owner_id,comment_id
+							FROM photoshare.Users U
+							CROSS JOIN photoshare.Comments C
+							ON U.user_id = C.owner_id
+							WHERE picture_id = {photo_id}; ''')
+		info_raw = cursor.fetchall()"""
+
 	cursor.execute(f'''SELECT firstname,lastname,text,owner_id,comment_id
-						FROM photoshare.Users U
-						CROSS JOIN photoshare.Comments C
-						ON U.user_id = C.owner_id
-						WHERE picture_id = {photo_id}; ''')
+								FROM photoshare.Users U
+								CROSS JOIN photoshare.Comments C
+								ON U.user_id = C.owner_id
+								WHERE picture_id = {photo_id}; ''')
 	info_raw = cursor.fetchall()
 	print(info_raw)
 	return info_raw
@@ -379,21 +398,21 @@ def album(id):
 	return render_template("album.html", photos=photos, album=album, album_id=id, base64=base64)
 
 @app.route("/album/<album_id>/photo/<photo_id>",methods=['GET','POST'])
-def photo(album_id,photo_id):
+def photo(album_id,photo_id,comment_filter=None):
 	uid=getUserIdFromEmail(flask_login.current_user.id)
 	cursor = conn.cursor()
 	cursor.execute('''SELECT imgdata,caption,likes FROM Pictures WHERE album_id=%s and picture_id = %s''',
 				   (album_id, photo_id))
 	data = cursor.fetchall()[0]
+
 	if request.method=="POST":
 		uid = getUserIdFromEmail(flask_login.current_user.id)
 		comment = request.form.get('comment')
 		to_delete = request.form.get('delete')
 		like = request.form.get('like')
-
 		cursor.execute('''SELECT user_id FROM Pictures WHERE picture_id = %s''', (photo_id))
 		pic_owner = cursor.fetchall()[0][0]
-
+		filter = request.form.get('filter')
 		if comment:
 			todays_date = str(datetime.date.today())
 			if(pic_owner == uid):
@@ -411,14 +430,14 @@ def photo(album_id,photo_id):
 			cursor.execute(f'''UPDATE Pictures SET likes=likes+1 WHERE picture_id={photo_id}''')
 			cursor.execute('''UPDATE Users SET contribution_score = (contribution_score + 1) WHERE user_id = %s''',(uid))
 			conn.commit()
-			cursor.execute('''SELECT imgdata,caption,likes FROM Pictures WHERE album_id=%s and picture_id = %s''',
-						   (album_id, photo_id))
-			data = cursor.fetchall()[0]
+		elif filter:
+			print(f'Filtering... by filter: {filter}')
+			return flask.redirect(url_for('photo', album_id=album_id, photo_id=photo_id,comment_filter=filter))
 
-		return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid)
+		return flask.redirect(url_for('photo',album_id=album_id,photo_id=photo_id))
 
 
-	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id),user=uid)
+	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id,comment_filter=comment_filter),user=uid)
 
 @app.route("/profile/upload",methods=['GET','POST'])
 @flask_login.login_required
