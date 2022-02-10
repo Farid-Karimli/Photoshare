@@ -67,6 +67,23 @@
                 </ul>
             </nav>
      </header>
+
+    {% if dismiss_comment %}
+        <script>
+            alert("You can't comment on your photo");
+        
+        </script>
+    {%endif %}
+
+    {% if dismiss_like %}
+        <script>
+            alert("You can't like your photo");
+        
+        </script>
+    {%endif %}
+
+    
+
     <div id="photo-outer">
         <img src='data:image/jpg;base64, {{ base64.b64encode(data[0]).decode("ascii") }}' width="300px" height="300px"/>
         <p>"{{ data[1] }}"</p>

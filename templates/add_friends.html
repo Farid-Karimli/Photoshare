@@ -43,6 +43,15 @@
                 </ul>
             </nav>
      </header>
+
+    {% if friend_self %}
+        <p>You can't be friends with yourself. Try Again!</p>
+    {% endif %}
+
+    {% if existing_friends %}
+        <p>You're already friends with this person</p>
+    {% endif %}
+
     <div id="search">
         <form method="post" action="{{ url_for('add_friends') }}">
             <p>Search You Friend on Photoshare</p>

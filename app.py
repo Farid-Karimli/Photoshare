@@ -283,27 +283,21 @@ def add_friend():
 
 		if((int)(uid) == (int)(friend_id)):
 			print(f"You can't be friends with yourself. ")
-			return '''
-					<p>You can't be friends with yourself. </p>
-					<a href='/add_friends'>Try Again</a>
-					
-				'''
+			return render_template('add_friends.html', data={},found=True, friend_self = True)
 
 		else:
 			cursor.execute('''SELECT user1, user2 FROM friends_with WHERE user1 = %s and user2 = %s''',
 						(uid, friend_id))
 
 			existing_friends = cursor.fetchall()
-			print(f"existing_friends: {existing_friends}")
-
 			if existing_friends:
-				print(f"You are already friends with {friend_id} ")
-				return '''
-						<p> You're already friends with this person  </p> 
-						<a href='/add_friends'>Try Again</a>
-						'''
+				return render_template('add_friends.html', data={},found=True, existing_friends = True)
 			else:
+				print("No issue until here")
 				cursor.execute('''INSERT INTO friends_with (user1, user2) VALUES (%s, %s )''', (uid, friend_id))
+				cursor.execute('''INSERT INTO friends_with (user1, user2) VALUES (%s, %s )''', (friend_id, uid))
+				cursor.execute('''UPDATE Users SET contribution_score = (contribution_score + 1) WHERE user_id = %s''',(uid))
+				cursor.execute('''UPDATE Users SET contribution_score = (contribution_score + 1) WHERE user_id = %s''',(friend_id))
 				conn.commit()
 				return render_template('friend.html', friends=getUserFriends(uid))
 
@@ -396,15 +390,26 @@ def photo(album_id,photo_id):
 		comment = request.form.get('comment')
 		to_delete = request.form.get('delete')
 		like = request.form.get('like')
+
+		cursor.execute('''SELECT user_id FROM Pictures WHERE picture_id = %s''', (photo_id))
+		pic_owner = cursor.fetchall()[0][0]
+
 		if comment:
 			todays_date = str(datetime.date.today())
+			if(pic_owner == uid):
+				return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid, dismiss_comment = True)
 			cursor.execute('''INSERT INTO Comments (text, date_created, picture_id,owner_id) VALUES (%s, %s, %s, %s)''' ,(comment,todays_date, photo_id,uid))
+			cursor.execute('''UPDATE Users SET contribution_score = (contribution_score + 1) WHERE user_id = %s''',(uid))
 			conn.commit()
+
 		elif to_delete:
 			cursor.execute(f'''DELETE FROM Comments WHERE comment_id={to_delete}''')
 			conn.commit()
 		elif like:
+			if(pic_owner == uid):
+				return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid, dismiss_like = True)
 			cursor.execute(f'''UPDATE Pictures SET likes=likes+1 WHERE picture_id={photo_id}''')
+			cursor.execute('''UPDATE Users SET contribution_score = (contribution_score + 1) WHERE user_id = %s''',(uid))
 			conn.commit()
 			cursor.execute('''SELECT imgdata,caption,likes FROM Pictures WHERE album_id=%s and picture_id = %s''',
 						   (album_id, photo_id))

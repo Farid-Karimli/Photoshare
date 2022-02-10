@@ -86,15 +86,3 @@ CREATE TABLE has_tag(
 INSERT INTO Users (email, password, firstname, lastname) VALUES ('test@bu.edu', 'test','John','Doe');
 INSERT INTO Users (email, password,firstname, lastname) VALUES ('test1@bu.edu', 'test', 'Jane', 'Doe');
 
-select * from pictures;
-
-select COUNT(*) from users where user_id = 1;
-
-DELETE FROM Pictures WHERE picture_id=1;
-DELETE FROM Pictures WHERE picture_id=1;
-UPDATE Users SET contribution_score = 10 WHERE user_id = 2;
-
-INSERT INTO Users (email, password,firstname, lastname) VALUES ('test2@bu.edu', 'test', 'Jane', 'Doe');
-
-
-
