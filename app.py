@@ -399,13 +399,16 @@ def albums():
 
 @app.route("/album/<id>",methods=['GET'])
 def album(id):
+	not_user = False
 	uid = getUserIdFromEmail(flask_login.current_user.id)
 	cursor = conn.cursor()
-	cursor.execute(f"SELECT album_name,date_created,cover_img FROM Albums WHERE album_id={id}")
+	cursor.execute(f"SELECT album_name,date_created,cover_img,owner FROM Albums WHERE album_id={id}")
 	album = cursor.fetchall()[0]
+	if uid!=album[3]:
+		not_user = True
 	cursor.execute(f'SELECT picture_id, imgdata,caption FROM Pictures WHERE album_id = {id}')
 	photos = cursor.fetchall()
-	return render_template("album.html", photos=photos, album=album, album_id=id, base64=base64)
+	return render_template("album.html", photos=photos, album=album, album_id=id, base64=base64,unauth=not_user)
 
 @app.route("/album/<album_id>/photo/<photo_id>",methods=['GET','POST'])
 def photo(album_id,photo_id,comment_filter=None):
