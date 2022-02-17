@@ -199,11 +199,11 @@ def getPhotoComments(photo_id,comment_filter=None):
 
 	if comment_filter is not None:
 		print('Filtered')
-		cursor.execute('''SELECT firstname,lastname,text,owner_id,comment_id
+		cursor.execute(f'''SELECT firstname,lastname,text,owner_id,comment_id
 								FROM photoshare.Users U
 								CROSS JOIN photoshare.Comments C
 								ON U.user_id = C.owner_id
-								WHERE picture_id = %s and text=\'%s\'''',(photo_id,comment_filter))
+								WHERE picture_id = {photo_id} and text="{comment_filter}"''')
 		info_raw = cursor.fetchall()
 	else:
 		cursor.execute(f'''SELECT firstname,lastname,text,owner_id,comment_id
@@ -393,8 +393,8 @@ def album(id):
 	photos = cursor.fetchall()
 	return render_template("album.html", photos=photos, album=album, album_id=id, base64=base64)
 
-@app.route("/album/<album_id>/photo/<photo_id>",methods=['GET','POST'])
-def photo(album_id, photo_id, comment_filter=None):
+@app.route("/album/<album_id>/photo/<photo_id>",methods=['GET','POST'],defaults={'comment_filter': None})
+def photo(album_id, photo_id, comment_filter):
 	uid=getUserIdFromEmail(flask_login.current_user.id)
 	cursor = conn.cursor()
 	cursor.execute('''SELECT imgdata,caption,likes FROM Pictures WHERE album_id=%s and picture_id = %s''',
@@ -447,7 +447,8 @@ def photo(album_id, photo_id, comment_filter=None):
 		elif comment_query:
 
 			print(f'Filtering... by filter: {comment_query}')
-			return flask.redirect(url_for('photo', album_id=album_id, photo_id=photo_id,comment_filter=comment_query))
+			return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,
+								   comments=getPhotoComments(photo_id, comment_query), user=uid)
 
 		return flask.redirect(url_for('photo',album_id=album_id,photo_id=photo_id))
 
