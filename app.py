@@ -102,23 +102,25 @@ def new_page_function():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 	if flask.request.method == 'GET':
-		return render_template('login.html')
+		return render_template('login.html',message=False)
 	#The request method is POST (page is recieving data)
 	email = flask.request.form['email']
 	cursor = conn.cursor()
 	#check if email is registered
-	if cursor.execute("SELECT password FROM Users WHERE email = '{0}'".format(email)):
-		data = cursor.fetchall()
-		pwd = str(data[0][0] )
+	cursor.execute("SELECT password FROM Users WHERE email = '{0}'".format(email))
+	user = cursor.fetchall()
+
+	if user != ():
+		print('Inside the if')
+		print(f'user: {user}')
+		pwd = str(user[0][0])
 		if flask.request.form['password'] == pwd:
 			user = User()
 			user.id = email
 			flask_login.login_user(user) #okay login in user
 			return flask.redirect(flask.url_for('protected')) #protected is a function defined in this file
-
 	#information did not match
-	return "<a href='/login'>Try again</a>\
-			</br><a href='/register'>or make an account</a>"
+	return flask.redirect(url_for('login'))
 
 @app.route('/logout')
 def logout():
@@ -339,6 +341,20 @@ def friend():
 	uid = getUserIdFromEmail(flask_login.current_user.id)
 	return render_template('friend.html', friends=getUserFriends(uid))
 
+@app.route('/remove_friend/<id>', methods=['GET'])
+@flask_login.login_required
+def remove_friend(id):
+	cursor = conn.cursor()
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+
+	cursor.execute(f"""DELETE FROM Friends_with WHERE user2 = {id} and user1={uid}""")
+	cursor.execute(f"""DELETE FROM Friends_with WHERE user1 = {id} and user2={uid}""")
+	cursor.execute(f"""UPDATE Users SET contribution_score = contribution_score - 1 WHERE user_id = {uid} or user_id={id} """)
+	conn.commit()
+
+
+	return flask.redirect(url_for('friend'))
+
 
 @app.route('/delete/<album_id>', methods=['GET','POST'])
 @flask_login.login_required
@@ -373,18 +389,7 @@ def create_album():
 		conn.commit()
 		return flask.redirect("/albums")
 
-	return '''
-			   <form action='upload-album' method='POST' enctype="multipart/form-data">
-			    <label for="name">Enter the name of the album:</label>
-				<input type='text' name='name' id='album_name' placeholder='Album name'></input><br/>
-				
-				<label for="cover_img">Select cover image:</label>
-                <input type="file" name="cover_img" required='true' /><br />
-				
-				<input type='submit' name='submit' value="Create"></input>
-			   </form></br>
-			   '''
-
+	return render_template('create_album.html')
 
 
 

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Album</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
+
+</head>
+<body>
+    <header>
+            <div id="logo">
+                <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
+                <h1>Photoshare</h1>
+            </div>
+             <nav>
+                <ul>
+                    <li><a href='/'>Home</a></li>
+                    <li><a href='/explore' >Explore</a></li>
+                    <li><a href='/albums' id ='active'>My albums</a></li>
+                    <li><a href='/friends'>Friends</a></li>
+                    <li><a href='/profile'>Profile</a></li>
+                    {%  if not need_login %}
+                        <li><a href='/logout'>Logout</a></li>
+                    {%  endif %}
+                </ul>
+            </nav>
+     </header>
+    <section id="main">
+         <form action='upload-album' method='POST' enctype="multipart/form-data">
+			    <label for="name">Enter the name of the album:</label>
+                <label for='album_name'></label><input type='text' name='name' id='album_name' placeholder='Album name'/><br/>
+
+				<label for="cover_img">Select cover image:</label>
+                <input type="file" name="cover_img" required='true' /><br />
+
+             <input type='submit' name='submit' value="Create"/>
+		 </form>
+    </section>
+
+</body>
+</html>

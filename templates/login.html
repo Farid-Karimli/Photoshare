@@ -20,12 +20,19 @@
      </header>
     <section id="main">
         <form action='login' method='POST'>
-				<input type='text' name='email' id='email' placeholder='email'></input>
-				<input type='password' name='password' id='password' placeholder='Enter your password'></input>
-				<input type='submit' name='submit' value="Log in"></input>
+            <label for='email'></label><input type='text' name='email' id='email' placeholder='email'/>
+            <label for='password'></label><input type='password' name='password' id='password' placeholder='Enter your password'/>
+            <input type='submit' name='submit' value="Log in"/>
         </form></br>
         <a href='/register'>Register</a>
 
+        {% if message %}
+
+            <p>Wrong password or email, try again. </p>
+			<br>
+            <a href='/register'>Sign up</a>
+
+        {% endif %}
     </section>
 </body>
 </html>
