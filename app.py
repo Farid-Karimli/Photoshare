@@ -107,7 +107,9 @@ def login():
 	email = flask.request.form['email']
 	cursor = conn.cursor()
 	#check if email is registered
+	found = True
 	if cursor.execute("SELECT password FROM Users WHERE email = '{0}'".format(email)):
+		print('In the if statement')
 		data = cursor.fetchall()
 		pwd = str(data[0][0] )
 		if flask.request.form['password'] == pwd:
@@ -115,10 +117,17 @@ def login():
 			user.id = email
 			flask_login.login_user(user) #okay login in user
 			return flask.redirect(flask.url_for('protected')) #protected is a function defined in this file
+		found = False
+		return flask.redirect(url_for('unauth'))
+	else:
+		found=False
+		return flask.redirect(url_for('unauth'))
 
 	#information did not match
-	return "<a href='/login'>Try again</a>\
-			</br><a href='/register'>or make an account</a>"
+@app.route('/login/unauth',methods=['GET'])
+def unauth():
+	return render_template('login.html',unauth=True)
+
 
 @app.route('/logout')
 def logout():
