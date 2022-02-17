@@ -30,6 +30,24 @@
         flex-direction: column;
         align-items: center;
     }
+    #home-view {
+        display:flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+    }
+
+    #home-view * {
+        margin: 0 2vw;
+
+    }
+    #most-contributions {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #most-contributions * {
+        margin: 1vh 0;
+    }
 </style>
 <body>
     <header>
@@ -54,6 +72,8 @@
             </nav>
      </header>
 <section id="main">
+
+
     {% if message %}
         <h4 id="message">{{message}}!</h4>
     {% endif %}
@@ -62,10 +82,31 @@
         <h1>Welcome back, {{ info['firstname'] + ' ' + info['lastname'] }}!</h1>
     {% endif %}
 
-
     {% if need_login %}
         <p>You should <a href='/login'>login!</a></p>
     {% endif %}
+
+<section id="home-view">
+            {#    contribution info = ((id,firstname,lastname,contribution_score), ...) #}
+            <div id="most-contributions">
+                {% for user in contribution_info %}
+                    <div id="user">
+                        <p>{{ user[1] + ' ' + user[2] }}</p>
+                        <p>Score: {{ user[3] }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div id="recent-albums">
+                <p>Recent albums here</p>
+            </div>
+
+            <div id="also-like">
+                <p>You may also like</p>
+            </div>
+</section>
+
+
 </section>
 
 

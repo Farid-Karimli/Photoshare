@@ -242,6 +242,12 @@ def isEmailUnique(email):
 		return True
 #end login code
 
+def getAllUsersContribution():
+	cursor = conn.cursor()
+	cursor.execute("""SELECT user_id,firstname,lastname,contribution_score FROM Users ORDER BY contribution_score DESC LIMIT 10;""")
+	data = cursor.fetchall()
+	print(f'data: {data}')
+	return data
 
 
 #begin photo uploading code
@@ -529,7 +535,7 @@ def protected():
 	cursor.execute(f"SELECT firstname,lastname FROM Users WHERE user_id = {uid}")
 	info_raw = cursor.fetchall()[0]
 	info = {'firstname':info_raw[0],'lastname': info_raw[1]}
-	return render_template('hello.html', name=flask_login.current_user.id,info=info)
+	return render_template('hello.html', name=flask_login.current_user.id,info=info,contribution_info = getAllUsersContribution())
 #default page
 @app.route("/", methods=['GET'])
 def hello():
