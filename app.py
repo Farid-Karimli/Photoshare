@@ -197,7 +197,7 @@ def getPhotoComments(photo_id,comment_filter=None):
 	cursor = conn.cursor()
 	info_raw = None
 
-	"""if filter is not None:
+	if comment_filter is not None:
 		print('Filtered')
 		cursor.execute('''SELECT firstname,lastname,text,owner_id,comment_id
 								FROM photoshare.Users U
@@ -211,15 +211,10 @@ def getPhotoComments(photo_id,comment_filter=None):
 							CROSS JOIN photoshare.Comments C
 							ON U.user_id = C.owner_id
 							WHERE picture_id = {photo_id}; ''')
-		info_raw = cursor.fetchall()"""
+		info_raw = cursor.fetchall()
 
-	cursor.execute(f'''SELECT firstname,lastname,text,owner_id,comment_id
-								FROM photoshare.Users U
-								CROSS JOIN photoshare.Comments C
-								ON U.user_id = C.owner_id
-								WHERE picture_id = {photo_id}; ''')
-	info_raw = cursor.fetchall()
-	print(info_raw)
+	print(f'filter = {comment_filter}')
+	print(f'comments: {info_raw}')
 	return info_raw
 
 def getUserIdFromEmail(email):
@@ -282,10 +277,10 @@ def add_friends():
 		if data:
 			found = True
 		return render_template('add_friends.html', data=data,found=found)
-		
+
 	else:
 		return render_template('add_friends.html', data={},found=True)
-		
+
 
 
 @app.route('/add_friend', methods=['POST'])
@@ -399,13 +394,12 @@ def album(id):
 	return render_template("album.html", photos=photos, album=album, album_id=id, base64=base64)
 
 @app.route("/album/<album_id>/photo/<photo_id>",methods=['GET','POST'])
-def photo(album_id,photo_id,comment_filter=None):
+def photo(album_id, photo_id, comment_filter=None):
 	uid=getUserIdFromEmail(flask_login.current_user.id)
 	cursor = conn.cursor()
 	cursor.execute('''SELECT imgdata,caption,likes FROM Pictures WHERE album_id=%s and picture_id = %s''',
 				   (album_id, photo_id))
 	data = cursor.fetchall()[0]
-
 	if request.method=="POST":
 		uid = getUserIdFromEmail(flask_login.current_user.id)
 		comment = request.form.get('comment')
@@ -413,8 +407,11 @@ def photo(album_id,photo_id,comment_filter=None):
 		like = request.form.get('like')
 		cursor.execute('''SELECT user_id FROM Pictures WHERE picture_id = %s''', (photo_id))
 		pic_owner = cursor.fetchall()[0][0]
-		filter = request.form.get('filter')
+		comment_query = request.form.get('filter')
+		print(f'In photo() comment_filter = {comment_query}')
+
 		if comment:
+			print('in comment')
 			todays_date = str(datetime.date.today())
 			if(pic_owner == uid):
 				return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid, dismiss_comment = True)
@@ -423,11 +420,13 @@ def photo(album_id,photo_id,comment_filter=None):
 			conn.commit()
 
 		elif to_delete:
+			print('in to_delete')
 			cursor.execute(f'''DELETE FROM Comments WHERE comment_id={to_delete}''')
 			cursor.execute('''UPDATE Users SET contribution_score = (contribution_score - 1) WHERE user_id = %s''',(uid))
 			conn.commit()
 		elif like:
-			if(pic_owner == uid):	
+			print('in like')
+			if(pic_owner == uid):
 				return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid, dismiss_like = True)
 			else:
 				cursor.execute('''SELECT count(*) FROM likes WHERE user_id = %s and photo_id = %s  ''', (uid, photo_id))
@@ -444,14 +443,16 @@ def photo(album_id,photo_id,comment_filter=None):
 					cursor.execute('''UPDATE Users SET contribution_score = (contribution_score + 1) WHERE user_id = %s''',(uid))
 					cursor.execute('''INSERT INTO likes (user_id, photo_id) VALUES (%s, %s)''', (uid, photo_id))
 					conn.commit()
-		elif filter:
-			print(f'Filtering... by filter: {filter}')
-			return flask.redirect(url_for('photo', album_id=album_id, photo_id=photo_id,comment_filter=filter))
+
+		elif comment_query:
+
+			print(f'Filtering... by filter: {comment_query}')
+			return flask.redirect(url_for('photo', album_id=album_id, photo_id=photo_id,comment_filter=comment_query))
 
 		return flask.redirect(url_for('photo',album_id=album_id,photo_id=photo_id))
 
-
-	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id,comment_filter=comment_filter),user=uid)
+	print(f'Rendering, comment_filter={comment_filter}')
+	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id,comment_filter),user=uid)
 
 @app.route("/profile/upload",methods=['GET','POST'])
 @flask_login.login_required
