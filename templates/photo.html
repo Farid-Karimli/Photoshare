@@ -63,16 +63,22 @@
     }
     #likes {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         justify-content: center;
     }
     #likes p {
         margin: 0 0 0 1vw;
     }
+    #like-inner {
+        display:flex;
+        flex-direction: row;
+        justify-content: center;
+
+    }
     .overlay {
+        position: relative;
         height: 100%;
         width: 0;
-        position: fixed;
         z-index: 1;
         top: 0;
         left: 0;
@@ -90,7 +96,12 @@
         margin-top: 30px;
         color: white;
     }
-    
+    #image {
+        width: 300px;
+        height: 300px;
+        margin: 0 auto;
+        display: block;
+    }
 </style>
 <body>
     <header>
@@ -115,18 +126,11 @@
      </header>
 
 
-    <div id="overlay_like" class="overlay" onclick="like_overlay(false)">
-        <div class="overlay-content">
-            <h1>You can't like the photos you posted.</h1>
-        </div>
-    </div>
 
-    <div id="overlay_comment" class="overlay" onclick="comment_overlay(false)">
-        <div class="overlay-content">
-            <h1>You can't comment on the photos you posted.</h1>
-        </div>
-    </div>
-        
+
+
+
+
 
     {% if dismiss_like %}
         <script>
@@ -143,12 +147,22 @@
         
 
     <div id="photo-outer">
-        <img src='data:image/jpg;base64, {{ base64.b64encode(data[0]).decode("ascii") }}' width="300px" height="300px"/>
+        <img id='image' src='data:image/jpg;base64, {{ base64.b64encode(data[0]).decode("ascii") }}' />
         <p>"{{ data[1] }}"</p>
         <div id="likes">
-            <button id='button-icon' class='like' form="comment-form" name="like" type="submit" value="{{ photo_id }}"><i class="fas fa-heart fa-lg"></i></button>
-            <p> {{ data[2] }} like(s) </p>
+            <div id="like-inner">
+                <button id='button-icon' class='like' form="comment-form" name="like" type="submit" value="{{ photo_id }}"><i class="fas fa-heart fa-lg"></i></button>
+                <p> {{ data[2] }} like(s) </p>
+            </div>
+            {% if dismiss_like %}
+                <div class="error">
+                    <h5>You can't like the photos you posted!</h5>
+                </div>
+            {% endif %}
+
         </div>
+
+
 
     </div>
     <div id="comments">
@@ -178,7 +192,17 @@
 
             </label>
             <input type="submit" value="Comment"/>
+
+
+
         </form>
+
+        {% if dismiss_comment %}
+                <div class="error">
+                    <h5>You can't comment on the photos you posted.</h5>
+                </div>
+        {% endif %}
+
 
     </div>
 

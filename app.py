@@ -362,7 +362,6 @@ def delete_photo(album_id):
 def create_album():
 	if request.method == "POST":
 		uid = getUserIdFromEmail(flask_login.current_user.id)
-
 		album_name = request.form.get('name')
 		cover_img_file = request.files['cover_img']
 		#date = request.form.get('created')
