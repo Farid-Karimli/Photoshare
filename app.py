@@ -373,20 +373,7 @@ def create_album():
 		conn.commit()
 		return flask.redirect("/albums")
 
-	return '''
-			   <form action='upload-album' method='POST' enctype="multipart/form-data">
-			    <label for="name">Enter the name of the album:</label>
-				<input type='text' name='name' id='album_name' placeholder='Album name'></input><br/>
-				
-				<label for="cover_img">Select cover image:</label>
-                <input type="file" name="cover_img" required='true' /><br />
-				
-				<input type='submit' name='submit' value="Create"></input>
-			   </form></br>
-			   '''
-
-
-
+	return render_template('upload_album.html')
 
 
 @app.route("/albums", methods=['GET','POST'])
