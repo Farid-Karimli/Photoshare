@@ -1,16 +1,101 @@
-<!-- author ben lawson (balawson@bu.edu) -->
 <head>
     <title>Upload a photo!</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
+    <script src="https://kit.fontawesome.com/28d30f508e.js" crossorigin="anonymous"></script>
+
+    <style>
+        input[type="submit"] {
+            background-color: #456268; 
+            border: none;
+            color: #FCF8EC;
+            padding: 8px 25px;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            font-size: 16px;
+            font-family: 'Ubuntu', sans-serif;
+            align-items: center;
+            transition-duration: .4s;
+            border: 2px solid #456268;
+            margin-left: 140px;
+            margin-right: 100px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #FCF8EC; 
+            color: #456268;
+        }
+
+        #caption{
+            border:none;
+            outline: none;
+            padding: 5px 5px 8px 0px;
+            width: 100%;
+            font-size: 18px;
+            font-family: 'Ubuntu', sans-serif;
+            border-bottom: solid 1.5px #79A3B1;
+            background-color: #FCF8EC;
+            margin-bottom: 5px;
+            color: #456268;
+            transition-duration: .3s;
+            
+        }
+
+        #caption:hover{
+            border: solid 1.5px #79A3B1;
+        }
+
+
+        #caption::placeholder{
+            font-size: 20px;
+            color:#456268;
+        }
+
+
+        #post p{
+            font-size: 20px;
+
+        }
+
+        input[type="file"]{
+            margin-left:100px;
+        }
+
+
+
+
+    </style>
 </head>
     <body>
+        <header>
+            <div id="logo">
+                <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
+                <h1>Photoshare</h1>
+            </div>
+             <nav>
+                <ul>
+                    <li><a href='/'  >Home</a></li>
+                    <li><a href='/explore' >Explore</a></li>
+                    <li><a href='/albums'>My albums</a></li>
+                    <li><a href='/friends' id="active">Friends</a></li>
+                    <li><a href='/profile'>Profile</a></li>
+                    {%  if not need_login %}
+                        <li><a href='/logout'>Logout</a></li>
+                    {%  endif %}
+                </ul>
+            </nav>
+     </header>
+
         <div class="title">
             <h1>Upload a photo to Photoshare</h1>
         </div>
-            <form method="post" enctype="multipart/form-data" action="/upload/{{ album_id }}">
-                <label for="photo">Select photo:</label>
+            <form method="post" enctype="multipart/form-data" action="/upload/{{ album_id }}" id = "post">
+                <p>Select a photo</p>
+                <label for="photo"></label>
                 <input type="file" name="photo" required='true' /><br />
-                <label for="caption">Please caption:</label>
-                <input type="text" name="caption" required='true' /><br />
+                <p>Please caption</p>
+                <label for="caption"></label>
+                <input type="text" name="caption" required='true' placeholder = "Caption" id = "caption"/><br />
                 <input type="submit" value="Upload" />
             </form>
     </body>
