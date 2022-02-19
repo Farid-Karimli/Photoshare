@@ -15,4 +15,7 @@ CREATE TABLE likes(
 
 );
 
+ALTER TABLE ALBUMS
+ALTER COLUMN date_created SET DEFAULT (DATE_FORMAT(NOW(), '%y-%m-%d'));
+
 
