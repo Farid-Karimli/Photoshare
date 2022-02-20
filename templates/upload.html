@@ -59,7 +59,8 @@
         }
 
         input[type="file"]{
-            margin-left:100px;
+            margin: 0 25%;
+            background-color: white;
         }
 
 
@@ -93,16 +94,22 @@
             <form method="post" enctype="multipart/form-data" action="/upload/{{ album_id }}" id = "post">
                 
                 <p>Please caption</p>
-                <label for="caption"></label>
-                <input type="text" name="caption" required='true' placeholder = "Caption" class = "caption"/><br />
+
+                <label>
+                    <input type="text" name="caption" required placeholder = "Caption" class = "caption"/>
+                </label>
+
+                <br/>
         
                 <p>Add tags to your photo</p>
-                <label for="tags"></label>
-                <input type="text" name="tags" placeholder = "Tags" class = "caption"/><br />
+
+                <label>
+                    <input type="text" name="tags" placeholder = "Tags" class = "caption"/>
+                </label><br />
                 
                 <p>Select a photo</p>
                 <label for="photo"></label>
-                <input type="file" name="photo" required='true' /><br />
-                <input type="submit" value="Upload" />
+                <input type="file" name="photo"/><br />
+                <input type="submit" value="Upload" id="upload-button"/>
             </form>
     </body>
