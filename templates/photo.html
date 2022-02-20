@@ -102,6 +102,18 @@
         margin: 0 auto;
         display: block;
     }
+
+    .tags-view {
+            display: flex;
+            flex-direction: row;
+            
+    }
+
+    .tags-view p { 
+        margin: 10px;
+         
+    } 
+
 </style>
 <body>
     <header>
@@ -162,9 +174,20 @@
 
         </div>
 
+    </div>
 
+    <div id = "tags">
+        {% if tags %}
+            <div class="tags-view">
+                {% for tag in tags %}
+                    <p><a href="/tags/{{tag[0]}}"> {{tag[1]}} </a></p>
+                {%  endfor %}
+            </div>
+        {% endif %}
 
     </div>
+
+
     <div id="comments">
         <h3>Comments</h3>
         {% if comments %}
@@ -185,6 +208,8 @@
                 </label>
             </div>
         {% endif %}
+
+        
 
         <form action="/album/{{ album_id }}/photo/{{ photo_id }}" method="post" id="comment-form">
             <label>

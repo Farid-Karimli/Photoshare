@@ -19,6 +19,7 @@
             border: 2px solid #456268;
             margin-left: 140px;
             margin-right: 100px;
+            margin-top: 40px;
         }
 
         input[type="submit"]:hover {
@@ -26,7 +27,7 @@
             color: #456268;
         }
 
-        #caption{
+        input[type="text"]{
             border:none;
             outline: none;
             padding: 5px 5px 8px 0px;
@@ -41,12 +42,12 @@
             
         }
 
-        #caption:hover{
+        input[type="text"]:hover{
             border: solid 1.5px #79A3B1;
         }
 
 
-        #caption::placeholder{
+        input[type="text"]::placeholder{
             font-size: 20px;
             color:#456268;
         }
@@ -90,12 +91,18 @@
             <h1>Upload a photo to Photoshare</h1>
         </div>
             <form method="post" enctype="multipart/form-data" action="/upload/{{ album_id }}" id = "post">
+                
+                <p>Please caption</p>
+                <label for="caption"></label>
+                <input type="text" name="caption" required='true' placeholder = "Caption" class = "caption"/><br />
+        
+                <p>Add tags to your photo</p>
+                <label for="tags"></label>
+                <input type="text" name="tags" placeholder = "Tags" class = "caption"/><br />
+                
                 <p>Select a photo</p>
                 <label for="photo"></label>
                 <input type="file" name="photo" required='true' /><br />
-                <p>Please caption</p>
-                <label for="caption"></label>
-                <input type="text" name="caption" required='true' placeholder = "Caption" id = "caption"/><br />
                 <input type="submit" value="Upload" />
             </form>
     </body>

@@ -17,6 +17,11 @@
     #album {
         text-align: center;
     }
+    
+    #tags{
+        display: flex;
+        flex-direction: row;
+    }
 </style>
 <body>
     <header>
@@ -48,6 +53,18 @@
 
             </div>
         {% endfor %}
+    </div>
+
+    <div id ="tags-view">
+        <h2>Explore Tags</h2>
+        <div id="tags"></div>
+        {% for tag in tags %}            
+            <p><a href="/tags/{{tag[0]}}">{{ tag[1] }}</a></p>
+ 
+        {% endfor %}
+        </div>
+
+
     </div>
 </body>
 </html>

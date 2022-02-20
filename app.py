@@ -226,6 +226,21 @@ def getPhotoComments(photo_id,comment_filter=None):
 	print(f'comments: {info_raw}')
 	return info_raw
 
+def getPhotoTags(photo_id):
+	cursor = conn.cursor()
+	cursor.execute(f'''SELECT * FROM has_tag H
+					   CROSS JOIN Tags T
+					   ON H.tag_id = T.tag_id
+					   WHERE picture_id = {photo_id}; ''')
+	tags_raw = cursor.fetchall()
+	tags = []
+	if(tags_raw):
+		for t in tags_raw:
+			tags.append((t[0],t[3]))
+	return tags
+
+
+
 def getUserIdFromEmail(email):
 	cursor = conn.cursor()
 	cursor.execute("SELECT user_id  FROM Users WHERE email = '{0}'".format(email))
@@ -263,13 +278,27 @@ def upload_file(album_id):
 		uid = getUserIdFromEmail(flask_login.current_user.id)
 		imgfile = request.files['photo']
 		caption = request.form.get('caption')
+		tags_raw = request.form.get('tags')
+		tags = tags_raw.split(", ")	
 		photo_data =imgfile.read()
 		cursor = conn.cursor()
 		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption,album_id) VALUES (%s, %s, %s, %s )''' ,(photo_data,uid, caption,album_id))
+		cursor.execute('''SELECT picture_id FROM Pictures where imgdata  = %s''', photo_data)
+		photo_id = cursor.fetchall()[0][0]
+		print(photo_id)
 		cursor.execute(f"UPDATE Users SET contribution_score = contribution_score+1 WHERE user_id = {uid};")
+		print("HERE")
+		for t in tags:
+			cursor.execute('''SELECT count(*) FROM Tags WHERE text = %s  ''', t)
+			tag_exists = cursor.fetchall()[0][0]
+			if(not tag_exists):
+				cursor.execute('''INSERT INTO Tags SET text = %s ''' , t)
+				conn.commit()
+			cursor.execute('''SELECT tag_id FROM Tags where text = %s''', t)
+			tag_id = cursor.fetchall()[0][0]
+			cursor.execute('''INSERT INTO has_tag (tag_id, picture_id) VALUES (%s, %s) ''' , (tag_id,photo_id))
 		conn.commit()
 		return flask.redirect(flask.url_for('album',id=album_id))
-	#The method is GET so we return a  HTML form to upload the a photo.
 	else:
 		return render_template('upload.html',album_id=album_id)
 #end photo uploading code
@@ -415,7 +444,7 @@ def photo(album_id, photo_id, comment_filter):
 			print('in comment')
 			todays_date = str(datetime.date.today())
 			if(pic_owner == uid):
-				return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid, dismiss_comment = True)
+				return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid, dismiss_comment = True, tags = getPhotoTags(photo_id))
 			cursor.execute('''INSERT INTO Comments (text, date_created, picture_id,owner_id) VALUES (%s, %s, %s, %s)''' ,(comment,todays_date, photo_id,uid))
 			cursor.execute('''UPDATE Users SET contribution_score = (contribution_score + 1) WHERE user_id = %s''',(uid))
 			conn.commit()
@@ -428,7 +457,7 @@ def photo(album_id, photo_id, comment_filter):
 		elif like:
 			print('in like')
 			if(pic_owner == uid):
-				return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid, dismiss_like = True)
+				return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid, dismiss_like = True, tags = getPhotoTags(photo_id))
 			else:
 				cursor.execute('''SELECT count(*) FROM likes WHERE user_id = %s and photo_id = %s  ''', (uid, photo_id))
 				liked_earlier = cursor.fetchall()[0][0]
@@ -449,12 +478,25 @@ def photo(album_id, photo_id, comment_filter):
 
 			print(f'Filtering... by filter: {comment_query}')
 			return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,
-								   comments=getPhotoComments(photo_id, comment_query), user=uid)
+								   comments=getPhotoComments(photo_id, comment_query), user=uid, tags = getPhotoTags(photo_id))
 
 		return flask.redirect(url_for('photo',album_id=album_id,photo_id=photo_id))
-
 	print(f'Rendering, comment_filter={comment_filter}')
-	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id,comment_filter),user=uid)
+	print(getPhotoTags(photo_id))
+	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id,comment_filter),user=uid, tags = getPhotoTags(photo_id))
+
+@app.route("/tags/<tag_id>",methods=['GET'])
+def photosWithTag(tag_id):
+	cursor = conn.cursor()
+	cursor.execute(f'''SELECT * FROM has_tag H
+					   CROSS JOIN Pictures P
+					   ON P.picture_id = H.picture_id
+					   WHERE tag_id = {tag_id}; ''')
+	photos = cursor.fetchall()
+	cursor.execute('''SELECT text FROM Tags where tag_id = %s''', tag_id)
+	tag_txt = cursor.fetchall()[0][0]
+	return render_template("tag.html", photos = photos, base64=base64, tag_txt = tag_txt)
+
 
 @app.route("/profile/upload",methods=['GET','POST'])
 @flask_login.login_required
@@ -510,7 +552,12 @@ def explore():
 						CROSS JOIN Users
 						ON Albums.owner = Users.user_id''')
 	albums = cursor.fetchall()
-	return render_template('explore.html',albums=albums,base64=base64)
+
+	cursor.execute(f'''SELECT T.tag_id, T.text  FROM has_tag H
+					   CROSS JOIN Tags T
+					   ON H.tag_id = T.tag_id; ''')
+	tags = cursor.fetchall()
+	return render_template('explore.html',albums=albums,base64=base64, tags = tags)
 
 
 @app.route('/')
