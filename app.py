@@ -183,6 +183,12 @@ def getUserAlbums(uid):
 	info_raw = cursor.fetchall()
 	return info_raw
 
+def getUserRecentAlbums(uid):
+	cursor = conn.cursor()
+	cursor.execute(f"SELECT * FROM Albums WHERE owner={uid} ORDER BY date_created DESC LIMIT 5")
+	info_raw = cursor.fetchall()
+	return info_raw
+
 def getAlbumPhotos(album_id):
 	cursor = conn.cursor()
 	cursor.execute(f"SELECT imgdata,picture_id FROM Pictures WHERE album_id = {album_id}")
@@ -193,7 +199,7 @@ def getAlbumPhotos(album_id):
 
 def getUserFriends(uid):
 	cursor = conn.cursor()
-	cursor.execute(f'''SELECT user1,email,firstname,lastname,user2, contribution_score
+	cursor.execute(f'''SELECT user1,email,firstname,lastname,user2,contribution_score,profile_img
 						FROM photoshare.Users U
 						LEFT JOIN friends_with F
 						ON U.user_id = F.user2
@@ -365,7 +371,7 @@ def add_friend():
 @flask_login.login_required
 def friend():
 	uid = getUserIdFromEmail(flask_login.current_user.id)
-	return render_template('friend.html', friends=getUserFriends(uid))
+	return render_template('friend.html', friends=getUserFriends(uid),base64=base64)
 
 
 @app.route('/delete/<album_id>', methods=['GET','POST'])
@@ -481,9 +487,8 @@ def photo(album_id, photo_id, comment_filter):
 								   comments=getPhotoComments(photo_id, comment_query), user=uid, tags = getPhotoTags(photo_id))
 
 		return flask.redirect(url_for('photo',album_id=album_id,photo_id=photo_id))
-	print(f'Rendering, comment_filter={comment_filter}')
-	print(getPhotoTags(photo_id))
-	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id,comment_filter),user=uid, tags = getPhotoTags(photo_id))
+	userInfo = getUserInfo(uid)
+	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id,comment_filter),user=uid, tags = getPhotoTags(photo_id),user_info=userInfo)
 
 @app.route("/tags/<tag_id>",methods=['GET'])
 def photosWithTag(tag_id):
@@ -513,6 +518,11 @@ def upload_profile_pic():
 
 	return render_template('profile_upload.html',user=uid)
 
+@app.route("/profile/<user_id>", methods=['GET'])
+def profile_public(user_id):
+	userInfo = getUserInfo(user_id)
+	return render_template("profile.html", userInfo = userInfo,base64=base64,public=True)
+
 
 
 @app.route("/profile", methods=['GET'])
@@ -522,6 +532,7 @@ def profile():
 	userInfo = getUserInfo(uid)
 	print(f'userinfo {userInfo}')
 	return render_template("profile.html", userInfo = userInfo,base64=base64)
+
 
 @app.route("/edit_profile", methods=['GET', "POST"])
 @flask_login.login_required
@@ -568,7 +579,7 @@ def protected():
 	cursor.execute(f"SELECT firstname,lastname FROM Users WHERE user_id = {uid}")
 	info_raw = cursor.fetchall()[0]
 	info = {'firstname':info_raw[0],'lastname': info_raw[1]}
-	return render_template('hello.html', name=flask_login.current_user.id,info=info,contribution_info = getAllUsersContribution())
+	return render_template('hello.html', name=flask_login.current_user.id,info=info,contribution_info = getAllUsersContribution(),recent_albums=getUserRecentAlbums(uid),base64=base64)
 #default page
 @app.route("/", methods=['GET'])
 def hello():

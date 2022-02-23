@@ -10,8 +10,11 @@
     #friends-view {
         display: flex;
         flex-direction: column;
-        background-color: lightgray;
-        border: 1px solid black;
+        margin-bottom: 5vh;
+    }
+
+    #friends-view h3 {
+        text-align: center;
     }
     .friend {
         display: flex;
@@ -22,6 +25,10 @@
         margin: 1vw;
     }
 
+    .friend img {
+        border-radius: 1.5vw;
+
+    }
 
 </style>
 <body>
@@ -47,16 +54,19 @@
                 </ul>
             </nav>
      </header>
+
+    <div id="friends-view">
     <h3>Your friends </h3>
-    {%  for friend in friends %}
-        <div class = "friend">
-            <p>{{ friend[1] }}</p>
-            <p>{{ friend[2] }}</p>
-            <p>{{ friend[3] }}</p>
-            <p>{{ friend[4]}}</p>
-            <p>{{ friend[5]}}</p>
-        </div>
-    {%  endfor %}
+        {%  for friend in friends %}
+            {# friend = { user1,email,firstname,lastname,user2,contribution_score,profile_img }  #}
+            <div class = "friend">
+                <img id='image' src='data:image/jpg;base64, {{ base64.b64encode(friend[6]).decode("ascii") }}' width="50px" height="50px"/>
+
+                <a href="profile/{{ friend[4] }}"><p>{{ friend[2] + '  ' + friend[3] }}</p></a>
+
+            </div>
+        {%  endfor %}
+    </div>
     <h3><a href="/add_friends">Add friends</a></h3>
 
 

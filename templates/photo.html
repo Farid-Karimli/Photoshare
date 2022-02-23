@@ -62,6 +62,24 @@
         flex-direction: row;
         justify-content: space-between;
     }
+    #user-info {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 1vw;
+    }
+    #user-info img {
+        display: inline;
+        border-radius: 1.5vw;
+
+    }
+    #user-info p {
+        margin: 0;
+        display: inline;
+        width: 50%;
+        height: 100%;
+    }
     #comments {
         width: 100%;
     }
@@ -188,10 +206,12 @@
         </div>
 
         <div id="info">
+            {# user_info = user_id,email,password,firstname,lastname,birthdate,gender,hometown,contribution_score,profile_img #}
             <div id="photo-outer">
                 <div id="caption">
                     <p>{{ data[1] }}</p>
                 </div>
+
 
                 <div id="likes">
                     <div id="like-inner">
@@ -207,6 +227,10 @@
 
             </div>
 
+        <div id="user-info">
+            <img id='profile-img' src='data:image/jpg;base64, {{ base64.b64encode(user_info[9]).decode("ascii") }}' width="50px" height="50px"/>
+            <p>{{ user_info[3] + ' ' + user_info[4] }}</p>
+        </div>
 
 
 
