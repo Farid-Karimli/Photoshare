@@ -36,7 +36,7 @@ CREATE TABLE Pictures
 CREATE TABLE Albums(
 	album_id int4 AUTO_INCREMENT,
     album_name char(20),
-    date_created DATE DEFAULT (DATE_FORMAT(NOW(), '%m-%d-%y')),
+    date_created DATE DEFAULT (DATE_FORMAT(NOW(), '%y-%m-%d')),
     owner int4,
     cover_img longblob,
     FOREIGN KEY(owner) REFERENCES Users(user_id) ON DELETE CASCADE,
@@ -85,4 +85,3 @@ CREATE TABLE has_tag(
 
 INSERT INTO Users (email, password, firstname, lastname) VALUES ('test@bu.edu', 'test','John','Doe');
 INSERT INTO Users (email, password,firstname, lastname) VALUES ('test1@bu.edu', 'test', 'Jane', 'Doe');
-

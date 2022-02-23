@@ -16,6 +16,7 @@
         margin: 1vw;
     }
     #picture {
+        box-sizing: content-box;
         border: 1px solid black;
     }
     #profile-view {
@@ -52,7 +53,9 @@
                 {% if userInfo[9] %}
                     <img id='profile_image' src='data:image/jpg;base64, {{ base64.b64encode(userInfo[9]).decode("ascii") }}' width="300px" height="300px"/>
                 {%  endif %}
-                <p><a href="/profile/upload">Update profile picture</a></p>
+                {% if not public %}
+                    <p><a href="/profile/upload">Update profile picture</a></p>
+                {% endif %}
             </div>
 
 
@@ -67,7 +70,10 @@
             </div>
 
         </div>
-        <h3><a href="/edit_profile">Edit Profile</a></h3>
+        {% if not public %}
+            <h3><a href="/edit_profile">Edit Profile</a></h3>
+        {% endif %}
+
     </section>
 </body>
 </html>

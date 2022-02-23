@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Album</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
+
+
+    <style>
+        input[type="submit"] {
+            background-color: #456268; 
+            border: none;
+            color: #FCF8EC;
+            padding: 8px 25px;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            font-size: 16px;
+            font-family: 'Ubuntu', sans-serif;
+            align-items: center;
+            transition-duration: .4s;
+            border: 2px solid #456268;
+            margin-left: 140px;
+            margin-right: 100px;
+            margin-top: 40px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #FCF8EC; 
+            color: #456268;
+        }
+
+        #album_name{
+            border:none;
+            outline: none;
+            padding: 5px 5px 8px 0px;
+            width: 80%;
+            font-size: 18px;
+            font-family: 'Ubuntu', sans-serif;
+            border-bottom: solid 1.5px #79A3B1;
+            background-color: #FCF8EC;
+            margin-bottom: 5px;
+            color: #456268;
+            transition-duration: .3s;
+            margin-left: 40px;
+        }
+
+        #album_name:hover{
+            border: solid 1.5px #79A3B1;
+        }
+
+
+        #album_name::placeholder{
+            font-size: 18px;
+            color:#456268;
+        }
+
+
+        #form p{
+            font-size: 20px;
+
+        }
+
+        input[type="file"]{
+            margin-left:100px;
+        }
+
+
+
+
+    </style>
+</head>
+    
+<body>
+    <header>
+        <div id="logo">
+            <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
+            <h1>Photoshare</h1>
+        </div>
+         <nav>
+            <ul>
+                <li><a href='/'  >Home</a></li>
+                <li><a href='/explore' >Explore</a></li>
+                <li><a href='/albums'>My albums</a></li>
+                <li><a href='/friends' id="active">Friends</a></li>
+                <li><a href='/profile'>Profile</a></li>
+                {%  if not need_login %}
+                    <li><a href='/logout'>Logout</a></li>
+                {%  endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <form action='upload-album' method='POST' enctype="multipart/form-data" id="form">
+        <p>Enter the name of the album:</p>
+        <label for="name"></label>
+        <input type='text' name='name' id='album_name' required='true' placeholder='Album name'></input><br/>
+        
+        <p>Select cover image:</p>
+        <label for="cover_img"></label>
+        <input type="file" name="cover_img" required='true' /><br />
+        
+        <input type='submit' name='submit' value="Create"></input>
+    </form></br>
+
+</body>
+		

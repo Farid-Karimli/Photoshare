@@ -33,11 +33,11 @@
     #home-view {
         display:flex;
         flex-direction: row;
-        justify-content: space-evenly;
+        justify-content: space-between;
+        gap: 7vw;
     }
 
     #home-view * {
-        margin: 0 2vw;
 
     }
     #most-contributions {
@@ -45,8 +45,20 @@
         flex-direction: column;
     }
 
-    #most-contributions * {
-        margin: 1vh 0;
+    #most-contributions div {
+        margin: 2vh 0;
+    }
+
+    #recent-albums * {
+        box-sizing: border-box;
+    }
+    #recent-albums div {
+         margin: 5vh 0;
+    }
+    #album img {
+        display: block;
+        margin: auto;
+
     }
 </style>
 <body>
@@ -89,6 +101,7 @@
 <section id="home-view">
             {#    contribution info = ((id,firstname,lastname,contribution_score), ...) #}
             <div id="most-contributions">
+                <h3>User with the highest contributions</h3>
                 {% for user in contribution_info %}
                     <div id="user">
                         <p>{{ user[1] + ' ' + user[2] }}</p>
@@ -98,11 +111,18 @@
             </div>
 
             <div id="recent-albums">
-                <p>Recent albums here</p>
+                {# recent_albums = album_id,album_name,date_created,owner,cover_img #}
+                <h3>Recently created albums: </h3>
+                {% for album in recent_albums %}
+                    <div id="album">
+                        <img id='image' src='data:image/jpg;base64, {{ base64.b64encode(album[4]).decode("ascii") }}'  alt="" width="50px" height="50px"/>
+                        <p>{{ album[1] }}</p>
+                    </div>
+                {% endfor %}
             </div>
 
             <div id="also-like">
-                <p>You may also like</p>
+                <h3>You may also like</h3>
             </div>
 </section>
 

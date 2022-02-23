@@ -14,5 +14,8 @@ CREATE TABLE likes(
     FOREIGN KEY(photo_id) REFERENCES Pictures(picture_id) ON DELETE CASCADE
 
 );
+use photoshare;
+ALTER TABLE ALBUMS
+ALTER COLUMN date_created SET DEFAULT (DATE_FORMAT(NOW(), '%y-%m-%d'));
 
 
