@@ -60,7 +60,9 @@
         {%  for friend in friends %}
             {# friend = { user1,email,firstname,lastname,user2,contribution_score,profile_img }  #}
             <div class = "friend">
-                <img id='image' src='data:image/jpg;base64, {{ base64.b64encode(friend[6]).decode("ascii") }}' width="50px" height="50px"/>
+                {% if friend[6] %}
+                 <img id='image' src='data:image/jpg;base64, {{ base64.b64encode(friend[6]).decode("ascii") }}' width="50px" height="50px"/>
+                {% endif %}
 
                 <a href="profile/{{ friend[4] }}"><p>{{ friend[2] + '  ' + friend[3] }}</p></a>
 

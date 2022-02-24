@@ -363,7 +363,7 @@ def add_friend():
 				cursor.execute('''UPDATE Users SET contribution_score = (contribution_score + 1) WHERE user_id = %s''',(uid))
 				cursor.execute('''UPDATE Users SET contribution_score = (contribution_score + 1) WHERE user_id = %s''',(friend_id))
 				conn.commit()
-				return render_template('friend.html', friends=getUserFriends(uid))
+				return render_template('friend.html', friends=getUserFriends(uid),base64=base64)
 
 
 
