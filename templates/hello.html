@@ -121,9 +121,20 @@
                 {% endfor %}
             </div>
 
+            {% if recommend_friends %}
             <div id="also-like">
-                <h3>You may also like</h3>
+                <h3>You may know: </h3>
+                {# friend = {user_id, email, password, firstname, lastname, birthdate, gender, hometown, contribution_score, profile_img} #}
+                {% for friend in recommend_friends %}
+                    <div id="friend">
+                        {% if friend[9] %}
+                        <img id='image' src='data:image/jpg;base64, {{ base64.b64encode(friend[9]).decode("ascii") }}'  alt="" width="50px" height="50px"/>
+                        {% endif %}
+                        <a href="profile/{{ friend[0] }}"><p>{{ friend[3] + ' ' + friend[4] }}</p></a>
+                    </div>
+                {% endfor %}
             </div>
+            {% endif %}
 </section>
 
 

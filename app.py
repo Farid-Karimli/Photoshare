@@ -228,8 +228,6 @@ def getPhotoComments(photo_id,comment_filter=None):
 							WHERE picture_id = {photo_id}; ''')
 		info_raw = cursor.fetchall()
 
-	print(f'filter = {comment_filter}')
-	print(f'comments: {info_raw}')
 	return info_raw
 
 def getPhotoTags(photo_id):
@@ -267,8 +265,31 @@ def getAllUsersContribution():
 	cursor = conn.cursor()
 	cursor.execute("""SELECT user_id,firstname,lastname,contribution_score FROM Users ORDER BY contribution_score DESC LIMIT 10;""")
 	data = cursor.fetchall()
-	print(f'data: {data}')
 	return data
+
+def getTopFriendsOfFriends(uid):
+	Sql_statement = f'''
+		SELECT user_id, email, password, firstname, lastname, birthdate, gender, hometown, contribution_score, profile_img FROM
+			( SELECT user2
+				FROM (
+					SELECT F1.user1,F1.user2
+					FROM Friends_with F
+					INNER JOIN Friends_with F1 WHERE F.user1={uid} and F.user2 = F1.user1 and not F1.user2 = {uid}
+					)
+					as FF
+				GROUP BY user2
+				ORDER BY COUNT(user2) DESC
+			) as Recommended
+		INNER JOIN Users ON Recommended.user2 = Users.user_id'''
+
+	cursor = conn.cursor()
+	cursor.execute(Sql_statement)
+	data = cursor.fetchall()
+	print(f'friends of friends: {data}')
+	return data
+
+
+
 
 
 #begin photo uploading code
@@ -579,7 +600,7 @@ def protected():
 	cursor.execute(f"SELECT firstname,lastname FROM Users WHERE user_id = {uid}")
 	info_raw = cursor.fetchall()[0]
 	info = {'firstname':info_raw[0],'lastname': info_raw[1]}
-	return render_template('hello.html', name=flask_login.current_user.id,info=info,contribution_info = getAllUsersContribution(),recent_albums=getUserRecentAlbums(uid),base64=base64)
+	return render_template('hello.html', name=flask_login.current_user.id,info=info,contribution_info = getAllUsersContribution(),recent_albums=getUserRecentAlbums(uid),recommend_friends=getTopFriendsOfFriends(uid),base64=base64)
 #default page
 @app.route("/", methods=['GET'])
 def hello():
