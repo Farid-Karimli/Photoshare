@@ -156,6 +156,24 @@
         border: 1px solid black;
     }
 
+    #users_liked_button {
+        background-color: transparent;
+        background-repeat: no-repeat;
+        border: none;
+        cursor: pointer;
+        overflow: hidden;
+        outline: none;
+        font-size: 25px;
+    }
+
+    #title_liked{
+        font-size: 50px;
+    }
+
+     .user-row h2 {
+        word-spacing: 30px;
+    } 
+    
 </style>
 <body>
 <header>
@@ -179,13 +197,6 @@
     </nav>
 </header>
 
-
-
-
-
-
-
-
 {% if dismiss_like %}
     <script>
         like_overlay(true)
@@ -197,6 +208,12 @@
     <script>
         comment_overlay(true)
     </script>
+{%endif %}
+
+{% if get_liked_users %}
+        <script>
+            liked_users_overlay(true)
+        </script>
 {%endif %}
 
         <div id="photo-background">
@@ -216,7 +233,7 @@
                 <div id="likes">
                     <div id="like-inner">
                         <button id='button-icon' class='like' form="comment-form" name="like" type="submit" value="{{ photo_id }}"><i class="fas fa-heart fa-lg"></i></button>
-                        <p> {{ data[2] }} like(s) </p>
+                        <button id='users_liked_button' class='like' form="comment-form" name="users_liked" type="submit" value="{{ data[2] }}"><i>{{ data[2] }} likes.</i></button>
                     </div>
                     {% if dismiss_like %}
                         <div class="error">
@@ -226,7 +243,7 @@
                 </div>
 
             </div>
-
+        </div>
         <div id="user-info">
             {% if user_info[9] %}
                 <img id='profile-img' src='data:image/jpg;base64, {{ base64.b64encode(user_info[9]).decode("ascii") }}' width="50px" height="50px"/>
@@ -234,6 +251,24 @@
                 <p>{{ user_info[3] + ' ' + user_info[4] }}</p>
         </div>
 
+    <div id="overlay_liked_users" class="overlay" onclick="liked_users_overlay(false)">
+        <div class="overlay-content">
+            
+            <section>
+                <h1 id = "title_liked">Users who liked this photo:</h1>
+                {%  for row in users_liked %}
+                    <div class="user-row">
+                        <h2>{{row[0]}} {{row[1]}} {{row[2]}} {{row[3]}} {{row[4]}}</h2>
+                    </div>
+                {%  endfor %}
+            </section>
+
+        </div>
+    </div>
+        
+
+    
+   
 
 
 
@@ -288,6 +323,6 @@
         </div>
 
 
-    </div>
+    
 </body>
 </html>

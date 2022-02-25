@@ -208,6 +208,17 @@ def getUserFriends(uid):
 	print(info_raw)
 	return info_raw
 
+def getLikedUsers(photo_id):
+	cursor = conn.cursor()
+	cursor.execute(f''' SELECT u.user_id, u.email, u.firstname, u.lastname, u.contribution_score, l.photo_id
+					 	FROM Users u
+						LEFT JOIN likes l 
+						USING(user_id)
+						Where photo_id = {photo_id}''')
+	info_raw = cursor.fetchall()
+	print(info_raw)
+	return info_raw
+
 def getPhotoComments(photo_id,comment_filter=None):
 	cursor = conn.cursor()
 	info_raw = None
@@ -465,6 +476,7 @@ def photo(album_id, photo_id, comment_filter):
 		cursor.execute('''SELECT user_id FROM Pictures WHERE picture_id = %s''', (photo_id))
 		pic_owner = cursor.fetchall()[0][0]
 		comment_query = request.form.get('filter')
+		users_liked = request.form.get('users_liked')
 		print(f'In photo() comment_filter = {comment_query}')
 
 		if comment:
@@ -500,7 +512,12 @@ def photo(album_id, photo_id, comment_filter):
 					cursor.execute('''UPDATE Users SET contribution_score = (contribution_score + 1) WHERE user_id = %s''',(uid))
 					cursor.execute('''INSERT INTO likes (user_id, photo_id) VALUES (%s, %s)''', (uid, photo_id))
 					conn.commit()
-
+		elif users_liked:
+			users_liked = getLikedUsers(photo_id)
+			print(users_liked)
+			return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,
+								   comments=getPhotoComments(photo_id), user=uid, get_liked_users=True,
+								   users_liked=users_liked)
 		elif comment_query:
 
 			print(f'Filtering... by filter: {comment_query}')
