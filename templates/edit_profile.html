@@ -1,21 +1,92 @@
 <!-- author ben lawson balawson@bu.edu -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Profile</title>
-    <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
+    <head>
+        <meta charset="UTF-8">
+        <title>Edit Profile</title>
+        <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
 
-</head>
-{%if not supress%}
-<h1> Email already in use! Use another one.</h1>
-{% endif %}
+    </head>
+    {%if not supress%}
+    <h1> Email already in use! Use another one.</h1>
+    {% endif %}
 
-{%if incorrect_pass%}
-<h1> The old password you entered is incorrect. Please try again. </h1>
-{% endif %}
+    {%if incorrect_pass%}
+    <h1> The old password you entered is incorrect. Please try again. </h1>
+    {% endif %}
+
+    <style>
+        .input{
+            border:none;
+            outline: none;
+            padding: 5px 5px 8px 0px;
+            width: 100%;
+            font-size: 18px;
+            font-family: 'Ubuntu', sans-serif;
+            border-bottom: solid 1.5px #79A3B1;
+            background-color: #FCF8EC;
+            margin-bottom: 5px;
+            color: #456268;
+            transition-duration: .3s;
+
+        }
+    
+        .input:hover{
+            border: solid 1.5px #79A3B1;
+        }
+
+
+        .input::placeholder{
+            font-size: 18px;
+            color:#456268;
+        }
+
+        a{
+            margin-top: 10px;
+        }
+
+    label{
+        font-size: 20px;
+    }
+
+    input[type="submit"] {
+            background-color: #456268; 
+            border: none;
+            color: #FCF8EC;
+            padding: 8px 25px;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            font-size: 16px;
+            font-family: 'Ubuntu', sans-serif;
+            align-items: center;
+            transition-duration: .4s;
+            border: 2px solid #456268;
+            margin-left: 190px;
+            margin-right: 100px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #FCF8EC; 
+            color: #456268;
+        }
+    </style>
+
     <body>
-    <header>
+
+        <!-- <header>
+                <div id="logo">
+                    <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
+                    <h1>Photoshare</h1>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href='/'>Home</a></li>
+                    </ul>
+                </nav>
+        </header> -->
+
+        <header>
             <div id="logo">
                 <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
                 <h1>Photoshare</h1>
@@ -23,35 +94,44 @@
             <nav>
                 <ul>
                     <li><a href='/'>Home</a></li>
+                    <li><a href='/explore' id="active">Explore</a></li>
+                    <li><a href='/albums'>My albums</a></li>
+                    <li><a href='/friends'>Friends</a></li>
+                    <li><a href='/profile'>Profile</a></li>
+                    {%  if not need_login %}
+                        <li><a href='/logout'>Logout</a></li>
+                    {%  endif %}
                 </ul>
             </nav>
-     </header>
+        </header>
+
         <div class="title">
             <h1>Enter your information below</h1>
         </div>
         <div id="content">
+            <h3>Please input your old password to change your password</h3>
             <form method="post" action="{{ url_for('edit_profile') }}">
-                <h3>Please input your old password to change your password</h3>
                 <label for="password">Enter old password:</label>
-                <input type="old_password" name="old_password" /><br />
+                <input type="old_password" name="old_password" class= "input" /><br />
                 <label for="password">Enter new password:</label>
-                <input type="password" name="password" /><br />
+                <input type="password" name="password" class= "input" /><br />
 
                 <h3>Updating other info?</h3>
 
                 <label for="firstname">First name:</label>
-                <input type='text' name='firstname' id='firstname' placeholder='First Name'/><br/>
+                <input type='text' name='firstname' id='firstname' class= "input"  /><br/>
                 <label for="lastname">Last name:</label>
-                <input type='text' name='lastname' id='lastname' placeholder='Last Name'/><br/>
-                <label for="birthdate">Birth date:</label>
-                <input type="date" id="start" name="birthdate" ><br/>
+                <input type='text' name='lastname' id='lastname' class= "input" /><br/>
                 <label for="hometown">Hometown: </label>
-                <input type="text" name="hometown" placeholder='Hometown'/><br/>
+                <input type="text" name="hometown" class= "input"  /><br/>
                 <label for="gender">Gender:</label>
-                <input type='text' name='gender' id='gender' placeholder='Gender'/><br/>
-                
-                <input type="submit" />
+                <input type='text' name='gender' id='gender' class= "input" /><br/>
+                <label for="birthdate">Birth date:</label>
+                <input type="date" id="start" name="birthdate" class= "input" ><br/>                
+                <input type="submit" value ="Submit"/>
             </form>
          </div>
+
+         <a href='/profile'>Cancel</a>
     </body>
-<a href='/'>Home</a>
+    

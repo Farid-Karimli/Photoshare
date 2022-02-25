@@ -17,7 +17,7 @@
             align-items: center;
             transition-duration: .4s;
             border: 2px solid #456268;
-            margin-left: 140px;
+            margin-left: 100px;
             margin-right: 100px;
             margin-top: 40px;
         }
@@ -60,7 +60,6 @@
 
         input[type="file"]{
             margin: 0 25%;
-            background-color: white;
         }
 
 
@@ -111,5 +110,7 @@
                 <label for="photo"></label>
                 <input type="file" name="photo"/><br />
                 <input type="submit" value="Upload" id="upload-button"/>
+                
             </form>
+            <a href='/album/{{ album_id }}'>Cancel</a>
     </body>

@@ -228,8 +228,10 @@
             </div>
 
         <div id="user-info">
-            <img id='profile-img' src='data:image/jpg;base64, {{ base64.b64encode(user_info[9]).decode("ascii") }}' width="50px" height="50px"/>
-            <p>{{ user_info[3] + ' ' + user_info[4] }}</p>
+            {% if user_info[9] %}
+                <img id='profile-img' src='data:image/jpg;base64, {{ base64.b64encode(user_info[9]).decode("ascii") }}' width="50px" height="50px"/>
+            {% endif %}
+                <p>{{ user_info[3] + ' ' + user_info[4] }}</p>
         </div>
 
 

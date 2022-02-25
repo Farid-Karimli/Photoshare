@@ -84,6 +84,11 @@
 
         }
 
+        a{
+            margin-top: 10px;
+        }
+
+
     </style>
 </head>
 <body>
@@ -138,6 +143,6 @@
     {% else  %}
         <h4> This user does not exist </h4>
     {% endif %}
-
+    <a href='/album/{{ album }}'>Cancel</a>
 </body>
 </html>
