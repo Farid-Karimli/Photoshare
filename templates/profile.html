@@ -16,12 +16,37 @@
         margin: 1vw;
     }
     #picture {
-        border: 1px solid black;
+        box-sizing: content-box;
+    }
+    #picture img {
+        border-radius: 4vw;
     }
     #profile-view {
         display: flex;
+        flex-direction: column;
+    }
+
+    #cover {
+        background-image: url({{ url_for('static',filename='background.jpg') }});
+        {#background-color: gray;#}
+        width: 100vw;
+        height: 20vh;
+        display: flex;
         flex-direction: row;
-        justify-content: space-evenly;
+        justify-content: center;
+        align-items: flex-end;
+        gap: 5vw;
+        border: black 1px solid;
+    }
+    #cover  {
+
+        color: white;
+        {#-webkit-text-stroke-width: 1px;#}
+        {#-webkit-text-stroke-color: black;#}
+    }
+
+    #cover * {
+        margin-bottom: 1vh;
     }
 </style>
 <body>
@@ -32,35 +57,44 @@
             </div>
             <nav>
                 <ul>
-                    <li><a href='/'>Home</a></li>
+                    <li><a href='/' >Home</a></li>
+                    <li><a href='/explore' >Explore</a></li>
                     <li><a href='/albums'>My albums</a></li>
-                    <li><a href='/explore'>Explore</a></li>
                     <li><a href='/friends'>Friends</a></li>
                     <li><a href='/profile' id="active">Profile</a></li>
                     {%  if not need_login %}
                         <li><a href='/logout'>Logout</a></li>
                     {%  endif %}
-
                 </ul>
             </nav>
      </header>
     <section id="main">
-        <h2>{{userInfo[3]}}  {{userInfo[4]}} </h2>
+
 
         <div id="profile-view">
 
-            <div id="picture">
-                {% if userInfo[9] %}
-                    <img id='profile_image' src='data:image/jpg;base64, {{ base64.b64encode(userInfo[9]).decode("ascii") }}' width="300px" height="300px"/>
-                {%  endif %}
-                <p><a href="/profile/upload">Update profile picture</a></p>
-            </div>
+            <div id="cover">
 
+                <div id="picture">
+                    {% if userInfo[9] %}
+                        <img id='profile_image' src='data:image/jpg;base64, {{ base64.b64encode(userInfo[9]).decode("ascii") }}' width="100px" height="100px" alt=""/>
+                    {% else %}
+                        <img id='profile_image' src='{{ url_for('static',filename='blank profile image.jpg') }}' width="100px" height="100px" alt=""/>
+                    {%  endif %}
+
+                    {% if not public %}
+                        <p><a href="/profile/upload">Update profile picture</a></p>
+                    {% endif %}
+                </div>
+
+                <div id="name">
+                    <h2> {{ userInfo[3] }} {{ userInfo[4] }}</h2>
+                </div>
+
+            </div>
 
             <div class = "profile">
                 <p> Email: {{ userInfo[1]}}</p>
-                <p> First Name: {{ userInfo[3] }} </p>
-                <p> Last Name: {{ userInfo[4] }}</p>
                 <p> Birthday: {{ userInfo[5]}}</p>
                 <p> Gender: {{ userInfo[6]}}</p>
                 <p> Hometown:{{ userInfo[7]}}</p>
@@ -68,7 +102,10 @@
             </div>
 
         </div>
-        <h3><a href="/edit_profile">Edit Profile</a></h3>
+        {% if not public %}
+            <h3><a href="/edit_profile">Edit Profile</a></h3>
+        {% endif %}
+
     </section>
 </body>
 </html>

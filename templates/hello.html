@@ -30,6 +30,36 @@
         flex-direction: column;
         align-items: center;
     }
+    #home-view {
+        display:flex;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 7vw;
+    }
+
+    #home-view * {
+
+    }
+    #most-contributions {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #most-contributions div {
+        margin: 2vh 0;
+    }
+
+    #recent-albums * {
+        box-sizing: border-box;
+    }
+    #recent-albums div {
+         margin: 5vh 0;
+    }
+    #album img {
+        display: block;
+        margin: auto;
+
+    }
 </style>
 <body>
     <header>
@@ -54,6 +84,8 @@
             </nav>
      </header>
 <section id="main">
+
+
     {% if message %}
         <h4 id="message">{{message}}!</h4>
     {% endif %}
@@ -62,10 +94,50 @@
         <h1>Welcome back, {{ info['firstname'] + ' ' + info['lastname'] }}!</h1>
     {% endif %}
 
-
     {% if need_login %}
         <p>You should <a href='/login'>login!</a></p>
     {% endif %}
+
+<section id="home-view">
+            {#    contribution info = ((id,firstname,lastname,contribution_score), ...) #}
+            <div id="most-contributions">
+                <h3>User with the highest contributions</h3>
+                {% for user in contribution_info %}
+                    <div id="user">
+                        <p>{{ user[1] + ' ' + user[2] }}</p>
+                        <p>Score: {{ user[3] }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div id="recent-albums">
+                {# recent_albums = album_id,album_name,date_created,owner,cover_img #}
+                <h3>Recently created albums: </h3>
+                {% for album in recent_albums %}
+                    <div id="album">
+                        <img id='image' src='data:image/jpg;base64, {{ base64.b64encode(album[4]).decode("ascii") }}'  alt="" width="50px" height="50px"/>
+                        <p>{{ album[1] }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if recommend_friends %}
+            <div id="also-like">
+                <h3>You may know: </h3>
+                {# friend = {user_id, email, password, firstname, lastname, birthdate, gender, hometown, contribution_score, profile_img} #}
+                {% for friend in recommend_friends %}
+                    <div id="friend">
+                        {% if friend[9] %}
+                        <img id='image' src='data:image/jpg;base64, {{ base64.b64encode(friend[9]).decode("ascii") }}'  alt="" width="50px" height="50px"/>
+                        {% endif %}
+                        <a href="profile/{{ friend[0] }}"><p>{{ friend[3] + ' ' + friend[4] }}</p></a>
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+</section>
+
+
 </section>
 
 

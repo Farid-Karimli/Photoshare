@@ -1,38 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-    <script>
-        
-        function like_overlay(on) {
-            if(on){
-                document.getElementById("overlay_like").style.width = "100%";
-            }
-            else{
-                document.getElementById("overlay_like").style.width = "0%";
+<script>
 
-            }
-        };
+    function like_overlay(on) {
+        if(on){
+            document.getElementById("overlay_like").style.width = "100%";
+        }
+        else{
+            document.getElementById("overlay_like").style.width = "0%";
 
-        function comment_overlay(on) {
-            if(on){
-                document.getElementById("overlay_comment").style.width = "100%";
-            }
-            else{
-                document.getElementById("overlay_comment").style.width = "0%";
+        }
+    };
 
-            }
-        };
-        function liked_users_overlay(on) {
-            if(on){
-                document.getElementById("overlay_liked_users").style.width = "100%";
-            }
-            else{
-                document.getElementById("overlay_liked_users").style.width = "0%";
+    function comment_overlay(on) {
+        if(on){
+            document.getElementById("overlay_comment").style.width = "100%";
+        }
+        else{
+            document.getElementById("overlay_comment").style.width = "0%";
 
-            }
-        };
-        
-        
-    </script>
+        }
+    };
+
+
+</script>
 <head>
     <meta charset="UTF-8">
     <title>Photo</title>
@@ -40,7 +31,17 @@
     <script src="https://kit.fontawesome.com/28d30f508e.js" crossorigin="anonymous"></script>
 </head>
 <style>
+    body {
+        margin: 0;
+    }
     body,p {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #info {
+        width: 20%;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -49,11 +50,38 @@
         display: flex;
         flex-direction: row;
     }
+    #photo-background {
+        width: 100%;
+        background-color: #232023;
+        padding: 5vh 0;
+    }
     #photo-outer {
+        width: 100%;
         font-size: 1.5vw;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    #user-info {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 1vw;
+    }
+    #user-info img {
+        display: inline;
+        border-radius: 1.5vw;
+
+    }
+    #user-info p {
+        margin: 0;
+        display: inline;
+        width: 50%;
+        height: 100%;
     }
     #comments {
-
+        width: 100%;
     }
     #comments-view {
         border: 1px solid black;
@@ -72,16 +100,22 @@
     }
     #likes {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         justify-content: center;
     }
     #likes p {
         margin: 0 0 0 1vw;
     }
+    #like-inner {
+        display:flex;
+        flex-direction: row;
+        justify-content: center;
+
+    }
     .overlay {
+        position: relative;
         height: 100%;
         width: 0;
-        position: fixed;
         z-index: 1;
         top: 0;
         left: 0;
@@ -90,7 +124,7 @@
         overflow-x: hidden;
         transition: 0.5s;
         cursor: pointer;
-        }
+    }
     .overlay-content {
         position: relative;
         top: 25%;
@@ -99,6 +133,29 @@
         margin-top: 30px;
         color: white;
     }
+    #image {
+        width: 300px;
+        height: 300px;
+        margin: 0 auto;
+        display: block;
+    }
+
+    .tags-view {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        margin-top: 3vh;
+
+    }
+
+    .tags-view p {
+        margin: 0;
+        font-size: 1em;
+        background-color: var(--secondary-color);
+        padding: 0.3vw;
+        border: 1px solid black;
+    }
+
     #users_liked_button {
         background-color: transparent;
         background-repeat: no-repeat;
@@ -119,39 +176,80 @@
     
 </style>
 <body>
-    <header>
-            <div id="logo">
-                <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
-                <h1>Photoshare</h1>
+<header>
+    <div id="logo">
+        <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
+        <h1>Photoshare</h1>
+    </div>
+    <nav>
+        <ul>
+            <li><a href='/'>Home</a></li>
+            <li><a href='/explore'>Explore</a></li>
+            <li><a href='/albums'>My albums</a></li>
+            <li><a href='/friends'>Friends</a></li>
+            <li><a href='/profile'>Profile</a></li>
+            {%  if not need_login %}
+                <li><a href='/logout'>Logout</a></li>
+            {%  endif %}
+
+
+        </ul>
+    </nav>
+</header>
+
+{% if dismiss_like %}
+    <script>
+        like_overlay(true)
+    </script>
+{%endif %}
+
+
+{% if dismiss_comment %}
+    <script>
+        comment_overlay(true)
+    </script>
+{%endif %}
+
+{% if get_liked_users %}
+        <script>
+            liked_users_overlay(true)
+        </script>
+{%endif %}
+
+        <div id="photo-background">
+            <div id="photo">
+                <img id='image' src='data:image/jpg;base64, {{ base64.b64encode(data[0]).decode("ascii") }}' />
             </div>
-             <nav>
-                <ul>
-                    <li><a href='/'>Home</a></li>
-                    <li><a href='/explore'>Explore</a></li>
-                    <li><a href='/albums'>My albums</a></li>
-                    <li><a href='/friends'>Friends</a></li>
-                    <li><a href='/profile'>Profile</a></li>
-                    {%  if not need_login %}
-                        <li><a href='/logout'>Logout</a></li>
-                    {%  endif %}
-
-
-                </ul>
-            </nav>
-     </header>
-
-
-    <div id="overlay_like" class="overlay" onclick="like_overlay(false)">
-        <div class="overlay-content">
-            <h1>You can't like the photos you posted.</h1>
         </div>
-    </div>
 
-    <div id="overlay_comment" class="overlay" onclick="comment_overlay(false)">
-        <div class="overlay-content">
-            <h1>You can't comment on the photos you posted.</h1>
+        <div id="info">
+            {# user_info = user_id,email,password,firstname,lastname,birthdate,gender,hometown,contribution_score,profile_img #}
+            <div id="photo-outer">
+                <div id="caption">
+                    <p>{{ data[1] }}</p>
+                </div>
+
+
+                <div id="likes">
+                    <div id="like-inner">
+                        <button id='button-icon' class='like' form="comment-form" name="like" type="submit" value="{{ photo_id }}"><i class="fas fa-heart fa-lg"></i></button>
+                        <button id='users_liked_button' class='like' form="comment-form" name="users_liked" type="submit" value="{{ data[2] }}"><i>{{ data[2] }} likes.</i></button>
+                    </div>
+                    {% if dismiss_like %}
+                        <div class="error">
+                            <p style="font-size: 0.8rem" >You can't like the photos you posted!</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
         </div>
-    </div>
+        <div id="user-info">
+            {% if user_info[9] %}
+                <img id='profile-img' src='data:image/jpg;base64, {{ base64.b64encode(user_info[9]).decode("ascii") }}' width="50px" height="50px"/>
+            {% endif %}
+                <p>{{ user_info[3] + ' ' + user_info[4] }}</p>
+        </div>
 
     <div id="overlay_liked_users" class="overlay" onclick="liked_users_overlay(false)">
         <div class="overlay-content">
@@ -169,66 +267,61 @@
     </div>
         
 
-    {% if dismiss_like %}
-        <script>
-            like_overlay(true)
-        </script>
-    {%endif %}
+    
+   
 
 
-    {% if dismiss_comment %}
-        <script>
-            comment_overlay(true)
-        </script>
-    {%endif %}
 
-    {% if get_liked_users %}
-        <script>
-            liked_users_overlay(true)
-        </script>
-    {%endif %}
-        
-
-    <div id="photo-outer">
-        <img src='data:image/jpg;base64, {{ base64.b64encode(data[0]).decode("ascii") }}' width="300px" height="300px"/>
-        <p>"{{ data[1] }}"</p>
-        <div id="likes">
-            <button id='button-icon' class='like' form="comment-form" name="like" type="submit" value="{{ photo_id }}"><i class="fas fa-heart fa-lg"></i></button>
-            <button id='users_liked_button' class='like' form="comment-form" name="users_liked" type="submit" value="{{ data[2] }}"><i>{{ data[2] }} likes.</i></button>
-            <!-- <a href='/photo.html'> {{ data[2] }} like(s)</a> -->
-        </div>
-
-    </div>
-    <div id="comments">
-        <h3>Comments</h3>
-        {% if comments %}
-            <div id="comments-view">
-                 {% for comment in comments %}
-                     {# comment = (firstname,lastname,comment text,user id) #}
-                     <div class="comment">
-                        <p>{{ comment[0] }} {{ comment[1] }}</p>
-                        <p>{{ comment[2] }}</p>
-                        {% if user==comment[3] %}
-                            <button id='button-icon' form="comment-form" name="delete" type="submit" value="{{ comment[4] }}"><i class="fas fa-times"></i></button>
-                        {% endif %}
-                     </div>
-                 {% endfor %}
-                <i class="fa-solid fa-magnifying-glass"></i><label>
+        <div id="comments">
+            <h3>Comments</h3>
+            {% if comments %}
+                <div id="comments-view">
+                    {% for comment in comments %}
+                        {# comment = (firstname,lastname,comment text,user id) #}
+                        <div class="comment">
+                            <p>{{ comment[0] }} {{ comment[1] }}</p>
+                            <p>{{ comment[2] }}</p>
+                            {% if user==comment[3] %}
+                                <button id='button-icon' form="comment-form" name="delete" type="submit" value="{{ comment[4] }}"><i class="fas fa-times"></i></button>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <i class="fa-solid fa-magnifying-glass"></i><label>
                     <input type="text" form='comment-form' name="filter" value="" placeholder="Search comments..."/>
                     <input type="submit" form='comment-form' value="Search"/>
                 </label>
+                </div>
+            {% endif %}
+
+
+
+            <form action="/album/{{ album_id }}/photo/{{ photo_id }}" method="post" id="comment-form">
+                <label>
+                    <input type="text" name="comment" value="" placeholder="Enter your comment here: "/>
+
+                </label>
+                <input type="submit" value="Comment"/>
+            </form>
+
+            {% if dismiss_comment %}
+                <div class="error">
+                    <h5>You can't comment on the photos you posted.</h5>
+                </div>
+            {% endif %}
+
+            <div id = "tags">
+            {% if tags %}
+                <h3> Tags </h3>
+                <div class="tags-view">
+                    {% for tag in tags %}
+                        <p><a href="/tags/{{tag[0]}}"> #{{tag[1]}} </a></p>
+                    {%  endfor %}
+                </div>
+            {% endif %}
             </div>
-        {% endif %}
 
-        <form action="/album/{{ album_id }}/photo/{{ photo_id }}" method="post" id="comment-form">
-            <label>
-                <input type="text" name="comment" value="" placeholder="Enter your comment here: "/>
+        </div>
 
-            </label>
-            <input type="submit" value="Comment"/>
-        </form>
-
-    </div>
 
     
 </body>

@@ -1,13 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-    <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
+    <head>
+        <meta charset="UTF-8">
+        <title>Login</title>
+        <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
 
-</head>
-<body>
-    <header>
+    </head>
+
+    <style>
+        /* #main{
+            margin-top: 20px;
+        } */
+
+        .input{
+                border:none;
+                outline: none;
+                padding: 5px 5px 8px 0px;
+                width: 100%;
+                font-size: 18px;
+                font-family: 'Ubuntu', sans-serif;
+                border-bottom: solid 1.5px #79A3B1;
+                background-color: #FCF8EC;
+                margin-bottom: 5px;
+                color: #456268;
+                transition-duration: .3s;
+                
+            }
+        
+        .input:hover{
+            border: solid 1.5px #79A3B1;
+        }
+
+
+        .input::placeholder{
+            font-size: 18px;
+            color:#456268;
+        }
+
+        label{
+            font-size: 20px;
+            margin-top: 20px;
+        }
+
+        input[type="submit"] {
+            background-color: #456268; 
+            border: none;
+            color: #FCF8EC;
+            padding: 8px 25px;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            font-size: 16px;
+            font-family: 'Ubuntu', sans-serif;
+            align-items: center;
+            transition-duration: .4s;
+            border: 2px solid #456268;
+            margin-left: 140px;
+            margin-right: 100px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #FCF8EC; 
+            color: #456268;
+        }
+
+        a{
+            margin-top: 10px;
+        }
+
+    </style>
+    <body>
+        <!-- <header>
+                <div id="logo">
+                    <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
+                    <h1>Photoshare</h1>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href='/'>Home</a></li>
+                    </ul>
+                </nav>
+        </header> -->
+
+        <header>
             <div id="logo">
                 <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
                 <h1>Photoshare</h1>
@@ -15,24 +90,38 @@
             <nav>
                 <ul>
                     <li><a href='/'>Home</a></li>
+                    <li><a href='/explore' id="active">Explore</a></li>
+                    <li><a href='/albums'>My albums</a></li>
+                    <li><a href='/friends'>Friends</a></li>
+                    <li><a href='/profile'>Profile</a></li>
+                    {%  if not need_login %}
+                        <li><a href='/logout'>Logout</a></li>
+                    {%  endif %}
                 </ul>
             </nav>
-     </header>
-    <section id="main">
-        <form action='login' method='POST'>
-            <label for='email'></label><input type='text' name='email' id='email' placeholder='email'/>
-            <label for='password'></label><input type='password' name='password' id='password' placeholder='Enter your password'/>
-            <input type='submit' name='submit' value="Log in"/>
-        </form></br>
-        <a href='/register'>Register</a>
+        </header>
 
-        {% if message %}
+        
 
-            <p>Wrong password or email, try again. </p>
-			<br>
-            <a href='/register'>Sign up</a>
+            <h2>Please enter your email and password.</h2>
+                <form action='/login' method='POST'>
+                    <label for="email">Email Address:</label>
+                    <input type='text' name='email' id='email' class="input"  /><br/>
+                    <label for="password">Password:</label>
+                    <input type='password' name='password' id='password' class="input" /><br/>
+                    <input type='submit' name='submit' value="Log in"/>
+                </form></br>
+                <a href='/register'>Register</a>
+                <a href='/explore'>Cancel</a>
+            
 
-        {% endif %}
-    </section>
-</body>
+            {% if unauth %}
+                <div>
+                    <p>Email or password not recognized, please try again.</p>
+                <br>
+                    <p>Don't have an account?<a href='/register'>Sign up!</a></p>
+                </div>
+            {% endif %}
+    
+    </body>
 </html>

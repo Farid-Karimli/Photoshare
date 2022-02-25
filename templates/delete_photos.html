@@ -1,17 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Delete a photo</title>
-</head>
-<body>
-    <h2> Which photo would you like to delete? </h2>
-    <form action="/delete/{{ album }}" method="POST">
-        {% for photo in photos %}
-        <input type="radio" id="radio-button" name="photo" value="{{ photo[1] }}">
-        <label for="html"><img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}' width="100px" height="100px" alt=""/></label>
-        {% endfor %}
-        <input type="submit" value="Delete">
-    </form>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <title>Delete a photo</title>
+        <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
+    </head>
+    <style>
+        input[type="submit"] {
+            background-color: #456268; 
+            border: none;
+            color: #FCF8EC;
+            padding: 8px 25px;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            font-size: 16px;
+            font-family: 'Ubuntu', sans-serif;
+            align-items: center;
+            transition-duration: .4s;
+            border: 2px solid #456268;
+            margin-left: 100px;
+            margin-right: 100px;
+            margin-top: 20px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #FCF8EC; 
+            color: #456268;
+        }
+
+        a{
+            margin-top: 10px;
+        }
+
+
+    </style>
+    <body>
+
+        <header>
+            <div id="logo">
+                <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
+                <h1>Photoshare</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href='/'>Home</a></li>
+                    <li><a href='/explore' id="active">Explore</a></li>
+                    <li><a href='/albums'>My albums</a></li>
+                    <li><a href='/friends'>Friends</a></li>
+                    <li><a href='/profile'>Profile</a></li>
+                    {%  if not need_login %}
+                        <li><a href='/logout'>Logout</a></li>
+                    {%  endif %}
+                </ul>
+            </nav>
+        </header>
+
+        <h2> Which photo would you like to delete? </h2>
+        <form action="/delete/{{ album }}" method="POST">
+            {% for photo in photos %}
+            <input type="radio" id="radio-button" name="photo" value="{{ photo[1] }}">
+            <label for="html"><img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}' width="100px" height="100px" alt=""/></label>
+            {% endfor %}
+            <br/><input type="submit" value="Delete">
+        </form>
+        <a href='/album/{{ album }}'>Cancel</a>
+    </body>
 </html>

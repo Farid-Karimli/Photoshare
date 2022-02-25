@@ -17,11 +17,78 @@
         .user-row {
             display: flex;
             flex-direction: row;
+            
         }
 
         .user-row p {
             margin: 1vw;
+            
         }
+
+        #search p{
+            font-size: 25px;
+        }
+
+        #name{
+            border:none;
+            outline: none;
+            padding: 5px 5px 8px 0px;
+            width: 100%;
+            font-size: 18px;
+            font-family: 'Ubuntu', sans-serif;
+            border-bottom: solid 1.5px #79A3B1;
+            background-color: #FCF8EC;
+            margin-bottom: 5px;
+            color: #456268;
+            transition-duration: .3s;
+
+        }
+
+        #name:hover{
+            border: solid 1.5px #79A3B1;
+        }
+
+
+        #name::placeholder{
+            font-size: 20px;
+            color:#456268;
+        }
+
+        input[type="submit"], .btn_add_friend {
+            background-color: #456268; 
+            border: none;
+            color: #FCF8EC;
+            padding: 8px 25px;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            font-size: 16px;
+            font-family: 'Ubuntu', sans-serif;
+            align-items: center;
+            transition-duration: .4s;
+            border: 2px solid #456268;
+            margin-left: 140px;
+            margin-right: 100px;
+        }
+
+        input[type="submit"]:hover, .btn_add_friend:hover {
+            background-color: #FCF8EC; 
+            color: #456268;
+        }
+
+        .btn_add_friend{
+            margin:none;
+            margin-top: 15px;
+            padding: 5px 10px;
+            font-size: 10px;
+
+        }
+
+        a{
+            margin-top: 10px;
+        }
+
+
     </style>
 </head>
 <body>
@@ -68,7 +135,7 @@
                     <p>{{row[1]}}<p>
                     <p>{{row[2]}}<p>
                     <form method="post" action="{{ url_for('add_friend') }}">
-                        <button type="submit" name="added_friend" value="{{ row[0] }}">Add Friend</button>
+                        <button type="submit" name="added_friend" value="{{ row[0] }}" class = "btn_add_friend">Add Friend</button>
                     </form>
                 </div>
             {%  endfor %}
@@ -76,6 +143,6 @@
     {% else  %}
         <h4> This user does not exist </h4>
     {% endif %}
-
+    <a href='/album/{{ album }}'>Cancel</a>
 </body>
 </html>

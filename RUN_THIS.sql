@@ -1,18 +1,10 @@
+
 use photoshare;
-ALTER TABLE Pictures
-ADD COLUMN likes int4 DEFAULT 0;
+SELECT * FROM
+(SELECT H.tag_id,H.picture_id,T.text FROM has_tag H
+	INNER JOIN Tags T
+	ON T.tag_id = H.tag_id) as Tags_Text
+right JOIN temp ON Tags_Text.text = temp.search
 
-ALTER TABLE photoshare.Users
-ADD COLUMN profile_img longblob;
-
-CREATE TABLE likes(
-	user_id int4,
-    photo_id int4,
-    
-    PRIMARY KEY(user_id, photo_id),
-    FOREIGN KEY(user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY(photo_id) REFERENCES Pictures(picture_id) ON DELETE CASCADE
-
-);
 
 
