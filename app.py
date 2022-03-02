@@ -468,6 +468,7 @@ def photo(album_id, photo_id, comment_filter):
 	cursor.execute('''SELECT imgdata,caption,likes FROM Pictures WHERE album_id=%s and picture_id = %s''',
 				   (album_id, photo_id))
 	data = cursor.fetchall()[0]
+	userInfo = getUserInfo(uid)
 	if request.method=="POST":
 		uid = getUserIdFromEmail(flask_login.current_user.id)
 		comment = request.form.get('comment')
@@ -483,7 +484,7 @@ def photo(album_id, photo_id, comment_filter):
 			print('in comment')
 			todays_date = str(datetime.date.today())
 			if(pic_owner == uid):
-				return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid, dismiss_comment = True, tags = getPhotoTags(photo_id))
+				return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid, dismiss_comment = True, tags = getPhotoTags(photo_id),user_info=userInfo)
 			cursor.execute('''INSERT INTO Comments (text, date_created, picture_id,owner_id) VALUES (%s, %s, %s, %s)''' ,(comment,todays_date, photo_id,uid))
 			cursor.execute('''UPDATE Users SET contribution_score = (contribution_score + 1) WHERE user_id = %s''',(uid))
 			conn.commit()
@@ -496,7 +497,7 @@ def photo(album_id, photo_id, comment_filter):
 		elif like:
 			print('in like')
 			if(pic_owner == uid):
-				return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid, dismiss_like = True, tags = getPhotoTags(photo_id))
+				return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,comments=getPhotoComments(photo_id),user=uid, dismiss_like = True, tags = getPhotoTags(photo_id),user_info=userInfo)
 			else:
 				cursor.execute('''SELECT count(*) FROM likes WHERE user_id = %s and photo_id = %s  ''', (uid, photo_id))
 				liked_earlier = cursor.fetchall()[0][0]
@@ -517,19 +518,36 @@ def photo(album_id, photo_id, comment_filter):
 			print(users_liked)
 			return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,
 								   comments=getPhotoComments(photo_id), user=uid, get_liked_users=True,
-								   users_liked=users_liked)
+								   users_liked=users_liked,user_info=userInfo,tags = getPhotoTags(photo_id))
 		elif comment_query:
 
 			print(f'Filtering... by filter: {comment_query}')
 			return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,
-								   comments=getPhotoComments(photo_id, comment_query), user=uid, tags = getPhotoTags(photo_id))
+								   comments=getPhotoComments(photo_id, comment_query), user=uid, tags = getPhotoTags(photo_id),user_info=userInfo,users_liked=users_liked)
 
 		return flask.redirect(url_for('photo',album_id=album_id,photo_id=photo_id))
-	userInfo = getUserInfo(uid)
-	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id,comment_filter),user=uid, tags = getPhotoTags(photo_id),user_info=userInfo)
+
+	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id,comment_filter),user=uid, tags = getPhotoTags(photo_id),user_info=userInfo,get_liked_users=False)
+
+@app.route('/tags',methods=['POST'])
+def photosWithManyTags():
+	assert request.method == 'POST'
+
+	tags_raw = request.form.get('tags')
+	tags = tags_raw.split(", ")
+	
+	if tags_raw is None:
+		return flask.redirect(url_for('photosWithTag',tag_id=None))
+	else:
+		print(tags)
+
+	return flask.redirect(url_for('explore'))
+
 
 @app.route("/tags/<tag_id>",methods=['GET'])
 def photosWithTag(tag_id):
+	if tag_id is None:
+		return render_template(url_for('explore'))
 	cursor = conn.cursor()
 	cursor.execute(f'''SELECT * FROM has_tag H
 					   CROSS JOIN Pictures P
@@ -602,7 +620,7 @@ def explore():
 						ON Albums.owner = Users.user_id''')
 	albums = cursor.fetchall()
 
-	cursor.execute(f'''SELECT T.tag_id, T.text  FROM has_tag H
+	cursor.execute(f'''SELECT DISTINCT T.tag_id, T.text  FROM has_tag H
 					   CROSS JOIN Tags T
 					   ON H.tag_id = T.tag_id; ''')
 	tags = cursor.fetchall()

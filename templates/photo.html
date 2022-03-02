@@ -2,12 +2,12 @@
 <html lang="en">
 <script>
 
-    function like_overlay(on) {
+    function liked_users_overlay(on) {
         if(on){
-            document.getElementById("overlay_like").style.width = "100%";
+            document.getElementById("overlay_liked_users").style.width = "100%";
         }
         else{
-            document.getElementById("overlay_like").style.width = "0%";
+            document.getElementById("overlay_liked_users").style.width = "0%";
 
         }
     };
@@ -63,7 +63,7 @@
         justify-content: space-between;
     }
     #user-info {
-        width: 100%;
+        width: 20%;
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -81,7 +81,7 @@
         height: 100%;
     }
     #comments {
-        width: 100%;
+        width: 20%;
     }
     #comments-view {
         border: 1px solid black;
@@ -115,7 +115,6 @@
     .overlay {
         position: relative;
         height: 100%;
-        width: 0;
         z-index: 1;
         top: 0;
         left: 0;
@@ -197,24 +196,8 @@
     </nav>
 </header>
 
-{% if dismiss_like %}
-    <script>
-        like_overlay(true)
-    </script>
-{%endif %}
 
 
-{% if dismiss_comment %}
-    <script>
-        comment_overlay(true)
-    </script>
-{%endif %}
-
-{% if get_liked_users %}
-        <script>
-            liked_users_overlay(true)
-        </script>
-{%endif %}
 
         <div id="photo-background">
             <div id="photo">
@@ -251,27 +234,6 @@
                 <p>{{ user_info[3] + ' ' + user_info[4] }}</p>
         </div>
 
-    <div id="overlay_liked_users" class="overlay" onclick="liked_users_overlay(false)">
-        <div class="overlay-content">
-            
-            <section>
-                <h1 id = "title_liked">Users who liked this photo:</h1>
-                {%  for row in users_liked %}
-                    <div class="user-row">
-                        <h2>{{row[0]}} {{row[1]}} {{row[2]}} {{row[3]}} {{row[4]}}</h2>
-                    </div>
-                {%  endfor %}
-            </section>
-
-        </div>
-    </div>
-        
-
-    
-   
-
-
-
         <div id="comments">
             <h3>Comments</h3>
             {% if comments %}
@@ -286,10 +248,11 @@
                             {% endif %}
                         </div>
                     {% endfor %}
-                    <i class="fa-solid fa-magnifying-glass"></i><label>
-                    <input type="text" form='comment-form' name="filter" value="" placeholder="Search comments..."/>
-                    <input type="submit" form='comment-form' value="Search"/>
-                </label>
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <label>
+                        <input type="text" form='comment-form' name="filter" value="" placeholder="Search comments..."/>
+                        <input type="submit" form='comment-form' value="Search"/>
+                    </label>
                 </div>
             {% endif %}
 
@@ -298,9 +261,8 @@
             <form action="/album/{{ album_id }}/photo/{{ photo_id }}" method="post" id="comment-form">
                 <label>
                     <input type="text" name="comment" value="" placeholder="Enter your comment here: "/>
-
                 </label>
-                <input type="submit" value="Comment"/>
+                <input type="submit" value="Comment" />
             </form>
 
             {% if dismiss_comment %}
@@ -310,17 +272,38 @@
             {% endif %}
 
             <div id = "tags">
-            {% if tags %}
-                <h3> Tags </h3>
-                <div class="tags-view">
-                    {% for tag in tags %}
-                        <p><a href="/tags/{{tag[0]}}"> #{{tag[1]}} </a></p>
-                    {%  endfor %}
-                </div>
-            {% endif %}
+                {% if tags %}
+                    <h3> Tags </h3>
+                    <div class="tags-view">
+                        {% for tag in tags %}
+                            <p><a href="/tags/{{tag[0]}}"> #{{tag[1]}} </a></p>
+                        {%  endfor %}
+                    </div>
+                {% endif %}
             </div>
 
+
         </div>
+
+        {% if get_liked_users %}
+            <div id="overlay_liked_users" class="overlay">
+                <div class="overlay-content">
+
+                    <section>
+                        <h1 id = "title_liked">Users who liked this photo:</h1>
+                        {%  for row in users_liked %}
+                            <div class="user-row">
+                                <h2>{{row[0]}} {{row[1]}} {{row[2]}} {{row[3]}} {{row[4]}}</h2>
+                            </div>
+                        {%  endfor %}
+                    </section>
+
+                </div>
+            </div>
+        {%endif %}
+
+
+
 
 
     
