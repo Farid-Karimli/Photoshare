@@ -27,19 +27,20 @@
             </nav>
         </header>
 
-        <h2>Photos with tag {{ tag_txt }}</h2>
+        <h2>Photos with tag(s) {{ tag_txt }}</h2>
 
         {% if photos %}
             <div id="photos-view">
                 {% for photo in photos %}
                 <div id="photo">
-                    <a href="/album/{{ photo[6] }}/photo/{{ photo[1] }}"><img src='data:image/jpg;base64, {{ base64.b64encode(photo[4]).decode("ascii") }}' width="100px" height="100px"/></a>
-                    <p>{{ photo[5] }}</p>
+                    <a href="/album/{{ photo[3] }}/photo/{{ photo[0] }}"><img src='data:image/jpg;base64, {{ base64.b64encode(photo[1]).decode("ascii") }}' width="100px" height="100px"/></a>
+                    <p>{{ photo[2] }}</p>
                 </div>
                 {% endfor %}
             </div>
         {% else %}
-            <h2> There is no photos with this tag. </h2>
+            <h2> There is no photos with this tag(s). </h2>
+            <a href='/explore'>Cancel</a>
         {%  endif %}
 
 

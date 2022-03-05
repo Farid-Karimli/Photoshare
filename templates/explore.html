@@ -57,7 +57,8 @@
 
     <div id ="tags-view">
         <h2>Explore Tags</h2>
-        <form action="/tags?search=multiple" method="post" id="tagsearch-form">
+        <form method="post" id="tagsearch-form">
+        <!-- <form action="/tags?search=multiple" method="post" id="tagsearch-form"> -->
             <label>
                 <input type="text" class="text-input" name="tags"/>
             </label>
@@ -65,7 +66,7 @@
         </form>
         <div id="tags">
         {% for tag in tags %}            
-            <p><a href="/tags/{{tag[0]}}">#{{ tag[1] }}</a></p>
+            <p><a href="/tags/{{tag[0]}}">#{{ tag[1] }} </a></p>
  
         {% endfor %}
     </div>

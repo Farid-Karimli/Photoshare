@@ -46,6 +46,15 @@ def getUserList():
 class User(flask_login.UserMixin):
 	pass
 
+def convertTupleStr(tuple):
+	string = '('
+	for t in tuple:
+		string = (string + str(t)) + ','
+	string = string[:-1]
+	string =  string + ")"
+	return string
+
+
 def getUserInfo(uid):
 	cursor = conn.cursor()
 	cursor.execute(f"SELECT * FROM Users WHERE user_id = {uid}")
@@ -109,7 +118,7 @@ def login():
 	#check if email is registered
 	found = True
 	if cursor.execute("SELECT password FROM Users WHERE email = '{0}'".format(email)):
-		print('In the if statement')
+	
 		data = cursor.fetchall()
 		pwd = str(data[0][0] )
 		if flask.request.form['password'] == pwd:
@@ -152,9 +161,7 @@ def register_user():
 		lastname=request.form.get('lastname')
 		date=request.form.get('birthdate')
 		context = {'firstname': firstname, 'lastname': lastname, 'email': email}
-		print(request.form)
 	except:
-		print("couldn't find all tokens") #this prints to shell, end users will not see this (all print statements go to shell)
 		return flask.redirect(flask.url_for('register'))
 	cursor = conn.cursor()
 	test =  isEmailUnique(email)
@@ -317,7 +324,7 @@ def upload_file(album_id):
 		imgfile = request.files['photo']
 		caption = request.form.get('caption')
 		tags_raw = request.form.get('tags')
-		tags = tags_raw.split(", ")	
+		tags = ((tags_raw.replace("#","")).lower()).split(", ")
 		photo_data =imgfile.read()
 		cursor = conn.cursor()
 		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption,album_id) VALUES (%s, %s, %s, %s )''' ,(photo_data,uid, caption,album_id))
@@ -529,19 +536,19 @@ def photo(album_id, photo_id, comment_filter):
 
 	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id,comment_filter),user=uid, tags = getPhotoTags(photo_id),user_info=userInfo,get_liked_users=False)
 
-@app.route('/tags',methods=['POST'])
-def photosWithManyTags():
-	assert request.method == 'POST'
+# @app.route('/many_tags',methods=['POST'])
+# def photosWithManyTags(search):
+# 	assert request.method == 'POST'
 
-	tags_raw = request.form.get('tags')
-	tags = tags_raw.split(", ")
+# 	tags_raw = request.form.get('tags')
+# 	tags = tags_raw.split(", ")
 	
-	if tags_raw is None:
-		return flask.redirect(url_for('photosWithTag',tag_id=None))
-	else:
-		print(tags)
+# 	if tags_raw is None:
+# 		return flask.redirect(url_for('photosWithTag',tag_id=None))
+# 	else:
+# 		print(tags)
 
-	return flask.redirect(url_for('explore'))
+# 	return flask.redirect(url_for('explore'))
 
 
 @app.route("/tags/<tag_id>",methods=['GET'])
@@ -549,10 +556,10 @@ def photosWithTag(tag_id):
 	if tag_id is None:
 		return render_template(url_for('explore'))
 	cursor = conn.cursor()
-	cursor.execute(f'''SELECT * FROM has_tag H
-					   CROSS JOIN Pictures P
-					   ON P.picture_id = H.picture_id
-					   WHERE tag_id = {tag_id}; ''')
+	cursor.execute(f'''SELECT DISTINCT P.picture_id, P.imgdata, P.caption, P.album_id FROM has_tag H
+					CROSS JOIN Pictures P
+					ON P.picture_id = H.picture_id
+					WHERE tag_id = {tag_id}; ''')
 	photos = cursor.fetchall()
 	cursor.execute('''SELECT text FROM Tags where tag_id = %s''', tag_id)
 	tag_txt = cursor.fetchall()[0][0]
@@ -604,16 +611,14 @@ def edit_profile():
 		hometown = request.form.get('hometown')
 		gender = request.form.get('gender')
 		info_map = [info_raw[0], info_raw[1], password, firstname, lastname, birthdate, gender, hometown, info_raw[8], old_password]
-		print("1", info_raw)
-		print("2", info_map)
 		current_password = info_raw[2]
-		print("3",editUserInfo(info_raw, info_map, current_password))
 		return flask.redirect(flask.url_for('profile'))
 	return render_template("edit_profile.html", supress = True)
 
-@app.route('/explore')
+@app.route('/explore', methods=['GET', "POST"])
 def explore():
 	cursor = conn.cursor()
+	
 	cursor.execute('''SELECT cover_img, album_name, album_id
 						FROM Albums 
 						CROSS JOIN Users
@@ -624,6 +629,39 @@ def explore():
 					   CROSS JOIN Tags T
 					   ON H.tag_id = T.tag_id; ''')
 	tags = cursor.fetchall()
+
+	if request.method=="POST":
+		tag_search_raw = request.form.get('tags')
+		if tag_search_raw:
+			tag_search = ((tag_search_raw.replace("#","")).lower()).split(", ")
+			cursor.execute( '''DROP TABLE IF EXISTS temp''')
+			cursor.execute( '''CREATE TABLE temp( tags char(20))''')
+			conn.commit()
+			for t in tag_search:
+				cursor.execute('''INSERT INTO temp SET tags = %s ''' , t)
+				
+			cursor.execute('''SELECT DISTINCT H.picture_id  FROM has_tag H
+							CROSS JOIN Tags T, Temp M
+							WHERE H.tag_id = T.tag_id 
+							AND M.tags = T.text
+							GROUP BY (H.picture_id)
+							HAVING Count(H.picture_id) >= %s''', len(tag_search) )
+			pics_with_tags_raw = cursor.fetchall()
+			if(pics_with_tags_raw):
+				pics_with_tags = []
+				for p in pics_with_tags_raw:
+					pics_with_tags.append(p[0])
+				format_strings = ','.join(['%s'] * len(pics_with_tags))
+				cursor.execute("SELECT DISTINCT P.picture_id, P.imgdata, P.caption, P.album_id FROM has_tag H\
+						CROSS JOIN Pictures P\
+						ON P.picture_id = H.picture_id\
+						WHERE P.picture_id in (%s)" % format_strings, tuple(pics_with_tags))
+				photos = cursor.fetchall()
+				cursor.execute( '''DROP TABLE temp''')
+				cursor.fetchall()
+				conn.commit()
+				return render_template("tag.html", photos = photos, base64=base64, tag_txt = tag_search_raw, tag_id = 0)
+			return render_template("tag.html", photos = None, base64=base64, tag_txt = tag_search_raw, tag_id = 0)
 	return render_template('explore.html',albums=albums,base64=base64, tags = tags)
 
 
