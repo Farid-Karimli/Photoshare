@@ -306,7 +306,70 @@ def getTopFriendsOfFriends(uid):
 	print(f'friends of friends: {data}')
 	return data
 
+def getPhotosWithMultipleTags(tag_search):
+	cursor = conn.cursor()
+	cursor.execute( '''DROP TABLE IF EXISTS temp''')
+	cursor.execute( '''CREATE TABLE temp( tags char(20))''')
+	conn.commit()
+	for t in tag_search:
+		cursor.execute('''INSERT INTO temp SET tags = %s ''' , t)
+				
+	cursor.execute('''SELECT DISTINCT H.picture_id  FROM has_tag H
+					CROSS JOIN Tags T, Temp M
+					WHERE H.tag_id = T.tag_id 
+					AND M.tags = T.text
+					GROUP BY (H.picture_id)
+					HAVING Count(H.picture_id) >= %s''', len(tag_search) )
+	pics_with_tags_raw = cursor.fetchall()
+	if(pics_with_tags_raw):
+		pics_with_tags = []
+		for p in pics_with_tags_raw:
+			pics_with_tags.append(p[0])
+		format_strings = ','.join(['%s'] * len(pics_with_tags))
+		cursor.execute("SELECT DISTINCT P.picture_id, P.imgdata, P.caption, P.album_id FROM has_tag H\
+				CROSS JOIN Pictures P\
+				ON P.picture_id = H.picture_id\
+				WHERE P.picture_id in (%s)" % format_strings, tuple(pics_with_tags))
+		photos = cursor.fetchall()
+		cursor.execute( '''DROP TABLE temp''')
+		cursor.fetchall()
+		conn.commit()
+		return photos
+	return None
 
+def getMyPhotosWithMultipleTags(tag_search, uid):
+	cursor = conn.cursor()
+	cursor.execute( '''DROP TABLE IF EXISTS temp''')
+	cursor.execute( '''CREATE TABLE temp( tags char(20))''')
+	conn.commit()
+	for t in tag_search:
+		cursor.execute('''INSERT INTO temp SET tags = %s ''' , t)
+				
+	cursor.execute('''SELECT DISTINCT H.picture_id  FROM has_tag H
+					CROSS JOIN Tags T, Temp M, Users U, Pictures P
+					WHERE H.tag_id = T.tag_id 
+					AND M.tags = T.text
+                    AND H.picture_id = P.picture_id
+                    AND P.user_id = U.user_id
+                    AND U.user_id = %s
+					GROUP BY (H.picture_id)
+					HAVING Count(H.picture_id) >= %s''', (uid, len(tag_search)) )
+	pics_with_tags_raw = cursor.fetchall()
+	if(pics_with_tags_raw):
+		pics_with_tags = []
+		for p in pics_with_tags_raw:
+			pics_with_tags.append(p[0])
+		format_strings = ','.join(['%s'] * len(pics_with_tags))
+		cursor.execute("SELECT DISTINCT P.picture_id, P.imgdata, P.caption, P.album_id FROM has_tag H\
+				CROSS JOIN Pictures P\
+				ON P.picture_id = H.picture_id\
+				WHERE P.picture_id in (%s)" % format_strings, tuple(pics_with_tags))
+		photos = cursor.fetchall()
+		cursor.execute( '''DROP TABLE temp''')
+		cursor.fetchall()
+		conn.commit()
+		return photos
+	return None
 
 
 
@@ -370,6 +433,18 @@ def add_friends():
 	else:
 		return render_template('add_friends.html', data={},found=True)
 
+@app.route('/many_tags/<uid>/<search>')
+def photosWithManyTags(search, uid):
+	if search:
+		tag_search = ((search.replace("#","")).lower()).split(", ")
+		if (int(uid) == 0):
+			photos = getPhotosWithMultipleTags(tag_search)
+			
+		else:	
+			photos = getMyPhotosWithMultipleTags(tag_search,uid)
+	if photos == None and int(uid) !=0:
+		return render_template("tag.html", photos = photos, base64=base64, tag_txt = search, userNoPhotos = True)
+	return render_template("tag.html", photos = photos, base64=base64, tag_txt = search)
 
 
 @app.route('/add_friend', methods=['POST'])
@@ -455,7 +530,15 @@ def create_album():
 def albums():
 	uid = getUserIdFromEmail(flask_login.current_user.id)
 	album_list = getUserAlbums(uid)
+	cursor = conn.cursor()
 
+	if request.method=="POST":
+			search = request.form.get('tags')
+			if(search):
+				return flask.redirect(url_for('photosWithManyTags', search = search, uid= uid))
+			else:
+				return render_template("albums.html", albums=album_list, base64=base64, no_input = True)
+				
 	return render_template("albums.html", albums=album_list, base64=base64)
 
 @app.route("/album/<id>",methods=['GET'])
@@ -535,20 +618,6 @@ def photo(album_id, photo_id, comment_filter):
 		return flask.redirect(url_for('photo',album_id=album_id,photo_id=photo_id))
 
 	return render_template('photo.html', data=data,album_id=album_id,photo_id=photo_id,base64=base64,comments=getPhotoComments(photo_id,comment_filter),user=uid, tags = getPhotoTags(photo_id),user_info=userInfo,get_liked_users=False)
-
-# @app.route('/many_tags',methods=['POST'])
-# def photosWithManyTags(search):
-# 	assert request.method == 'POST'
-
-# 	tags_raw = request.form.get('tags')
-# 	tags = tags_raw.split(", ")
-	
-# 	if tags_raw is None:
-# 		return flask.redirect(url_for('photosWithTag',tag_id=None))
-# 	else:
-# 		print(tags)
-
-# 	return flask.redirect(url_for('explore'))
 
 
 @app.route("/tags/<tag_id>",methods=['GET'])
@@ -631,37 +700,11 @@ def explore():
 	tags = cursor.fetchall()
 
 	if request.method=="POST":
-		tag_search_raw = request.form.get('tags')
-		if tag_search_raw:
-			tag_search = ((tag_search_raw.replace("#","")).lower()).split(", ")
-			cursor.execute( '''DROP TABLE IF EXISTS temp''')
-			cursor.execute( '''CREATE TABLE temp( tags char(20))''')
-			conn.commit()
-			for t in tag_search:
-				cursor.execute('''INSERT INTO temp SET tags = %s ''' , t)
-				
-			cursor.execute('''SELECT DISTINCT H.picture_id  FROM has_tag H
-							CROSS JOIN Tags T, Temp M
-							WHERE H.tag_id = T.tag_id 
-							AND M.tags = T.text
-							GROUP BY (H.picture_id)
-							HAVING Count(H.picture_id) >= %s''', len(tag_search) )
-			pics_with_tags_raw = cursor.fetchall()
-			if(pics_with_tags_raw):
-				pics_with_tags = []
-				for p in pics_with_tags_raw:
-					pics_with_tags.append(p[0])
-				format_strings = ','.join(['%s'] * len(pics_with_tags))
-				cursor.execute("SELECT DISTINCT P.picture_id, P.imgdata, P.caption, P.album_id FROM has_tag H\
-						CROSS JOIN Pictures P\
-						ON P.picture_id = H.picture_id\
-						WHERE P.picture_id in (%s)" % format_strings, tuple(pics_with_tags))
-				photos = cursor.fetchall()
-				cursor.execute( '''DROP TABLE temp''')
-				cursor.fetchall()
-				conn.commit()
-				return render_template("tag.html", photos = photos, base64=base64, tag_txt = tag_search_raw, tag_id = 0)
-			return render_template("tag.html", photos = None, base64=base64, tag_txt = tag_search_raw, tag_id = 0)
+			search = request.form.get('tags')
+			if search:
+				return flask.redirect(url_for('photosWithManyTags', search = search, uid =0))
+			else:
+				return render_template('explore.html',albums=albums,base64=base64, tags = tags, no_input = True)
 	return render_template('explore.html',albums=albums,base64=base64, tags = tags)
 
 

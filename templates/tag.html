@@ -39,10 +39,15 @@
                 {% endfor %}
             </div>
         {% else %}
-            <h2> There is no photos with this tag(s). </h2>
-            <a href='/explore'>Cancel</a>
+            {% if userNoPhotos %} 
+                <h2> You don't have any photos with this tag(s). </h2>
+                <a href='/albums'>Cancel</a>
+            {% else %}
+                <h2> There are no photos with this tag(s). </h2>
+                <a href='/explore'>Cancel</a>
+            {% endif %}
         {%  endif %}
-
+        
 
     </body>
 
