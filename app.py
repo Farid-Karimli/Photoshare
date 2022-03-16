@@ -198,10 +198,15 @@ def getUserRecentAlbums(uid):
 
 def getAlbumPhotos(album_id):
 	cursor = conn.cursor()
-	cursor.execute(f"SELECT imgdata,picture_id FROM Pictures WHERE album_id = {album_id}")
+	cursor.execute(f"SELECT imgdata,picture_id, caption FROM Pictures WHERE album_id = {album_id}")
 	info_raw = cursor.fetchall()
 	return info_raw
 
+def getAlbums(uid):
+	cursor = conn.cursor()
+	cursor.execute(f"SELECT cover_img, album_id, album_name FROM Albums WHERE owner ={uid}")
+	info_raw = cursor.fetchall()
+	return info_raw
 
 
 def getUserFriends(uid):
@@ -504,6 +509,20 @@ def delete_photo(album_id):
 
 	photos = getAlbumPhotos(album_id)
 	return render_template("delete_photos.html",photos=photos,base64=base64,album=album_id)
+
+@app.route('/delete_album', methods=['GET','POST'])
+@flask_login.login_required
+def delete_album():
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	if request.method == "POST":
+		print(request.form.get('album'))
+		album_id = request.form.get('album')
+		cursor = conn.cursor()
+		cursor.execute('DELETE FROM Albums WHERE album_id=%s', (album_id))
+		conn.commit()
+		return flask.redirect(flask.url_for('albums'))
+	albums = getAlbums(uid)
+	return render_template("delete_album.html",albums = albums,base64=base64)
 
 
 @app.route("/upload-album", methods=['GET','POST'])

@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Delete a photo</title>
+        <title>Delete an Album</title>
         <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
     </head>
     <style>
@@ -32,9 +32,11 @@
         a{
             margin-top: 10px;
         }
-        .photo{
+
+        .album{
             float: left;
         }
+
 
     </style>
     <body>
@@ -58,20 +60,21 @@
             </nav>
         </header>
 
-        <h2> Which photo would you like to delete? </h2>
-        <form action="/delete/{{ album }}" method="POST">
-            {% for photo in photos %}
-            <div class= "photo">
-                <input type="radio" id="radio-button" name="photo" value="{{ photo[1] }}">
-                <label for="html"><img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}' width="100px" height="100px" alt=""/>
-                <p>{{photo[2]}}</p>
+        <h2> Which album would you like to delete? </h2>
+        <form action="/delete_album" method="POST">
+            {% for album in albums %}
+            <div class = "album">
+                <input type="radio" id="radio-button" name="album" value="{{ album[1] }}">
+                <label for="html"><img src='data:image/jpg;base64, {{ base64.b64encode(album[0]).decode("ascii") }}' width="100px" height="100px" alt=""/>
+                <p>{{album[2]}}</p>
                 </label>
             </div>
             <div style="clear:both;"></div>
-        
+            
             {% endfor %}
             <br/><input type="submit" value="Delete">
         </form>
-        <a href='/album/{{ album }}'>Cancel</a>
+        <a href='/albums'>Cancel</a>
     </body>
 </html>
+
