@@ -22,6 +22,48 @@
         display: flex;
         flex-direction: row;
     }
+    h2,h4{
+        text-align: center;
+    }
+    input[type="submit"] {
+            background-color: #456268; 
+            border: none;
+            color: #FCF8EC;
+            padding: 8px 25px;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            font-size: 16px;
+            font-family: 'Ubuntu', sans-serif;
+            align-items: center;
+            transition-duration: .4s;
+            border: 2px solid #456268;
+            margin-left: 110px;
+            margin-right: 100px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #FCF8EC; 
+            color: #456268;
+        }
+        input[type="text"]{
+            border:none;
+            outline: none;
+            padding: 5px 5px 8px 0px;
+            width: 100%;
+            font-size: 18px;
+            font-family: 'Ubuntu', sans-serif;
+            border-bottom: solid 1.5px #79A3B1;
+            background-color: #FCF8EC;
+            margin-bottom: 5px;
+            color: #456268;
+            transition-duration: .3s;
+
+        }
+    
+        input[type="text"]:hover{
+            border: solid 1.5px #79A3B1;
+        }
 </style>
 <body>
     <header>
@@ -86,6 +128,9 @@
 
     <div id ="tags-view">
         <h2>Explore Tags</h2>
+        {% if no_input%}
+            <h4>Please enter a valid tag and try again.</h4>
+        {% endif %}
         <form method="post" id="tagsearch-form">
             <label>
                 <input type="text" class="text-input" name="tags"/>
