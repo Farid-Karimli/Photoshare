@@ -54,6 +54,22 @@ def convertTupleStr(tuple):
 	string =  string + ")"
 	return string
 
+def getPhotos(caption=None):
+	cursor = conn.cursor()
+	if caption is None or caption=="":
+		cursor.execute('''SELECT imgdata, caption, picture_id, album_id
+							FROM Pictures
+							ORDER BY likes DESC
+							LIMIT 5''')
+		data = cursor.fetchall()
+		return data
+	else:
+		cursor.execute(f'''SELECT imgdata, caption, picture_id, album_id
+							FROM Pictures
+							WHERE caption="{caption}"
+						''')
+		data = cursor.fetchall()
+		return data
 
 def getUserInfo(uid):
 	cursor = conn.cursor()
@@ -307,7 +323,38 @@ def getTopFriendsOfFriends(uid):
 	return data
 
 
+def getPopularTags():
+	SQL = '''
+			SELECT tag_id, text
+			FROM (
+				SELECT T.tag_id, text,picture_id
+				FROM has_tag HT
+				JOIN Tags T on HT.tag_id = T.tag_id
+				)
+				AS TagInfo
+			GROUP BY tag_id, text
+			ORDER BY COUNT(picture_id) DESC
+			LIMIT 10
+		 '''
+	cursor = conn.cursor()
+	cursor.execute(SQL)
+	data = cursor.fetchall()
+	return data
 
+
+def getPopularAlbums():
+	statement = """SELECT cover_img, album_name, album_id
+	FROM 
+		(SELECT A.*, P.likes FROM Albums A CROSS JOIN Pictures P ON A.album_id = P.album_id)
+		AS A1
+	GROUP BY album_id, album_name, date_created, owner,cover_img
+    ORDER BY SUM(likes) DESC
+    LIMIT 5;"""
+
+	cursor = conn.cursor()
+	cursor.execute(statement)
+	data = cursor.fetchall()
+	return data
 
 
 #begin photo uploading code
@@ -457,6 +504,19 @@ def albums():
 	album_list = getUserAlbums(uid)
 
 	return render_template("albums.html", albums=album_list, base64=base64)
+
+
+@app.route('/albums',methods = ['GET','POST'])
+def albums_public():
+	name = request.args.get('album_name')
+	SQL = f"SELECT * FROM photoshare.Albums WHERE album_name LIKE '{name}'"
+
+	cursor = conn.cursor()
+	cursor.execute(SQL)
+	album_list = cursor.fetchall()
+
+	return render_template("albums.html", albums=album_list, base64=base64)
+
 
 @app.route("/album/<id>",methods=['GET'])
 def album(id):
@@ -625,10 +685,7 @@ def explore():
 						ON Albums.owner = Users.user_id''')
 	albums = cursor.fetchall()
 
-	cursor.execute(f'''SELECT DISTINCT T.tag_id, T.text  FROM has_tag H
-					   CROSS JOIN Tags T
-					   ON H.tag_id = T.tag_id; ''')
-	tags = cursor.fetchall()
+	tags = getPopularTags()
 
 	if request.method=="POST":
 		tag_search_raw = request.form.get('tags')
@@ -662,7 +719,40 @@ def explore():
 				conn.commit()
 				return render_template("tag.html", photos = photos, base64=base64, tag_txt = tag_search_raw, tag_id = 0)
 			return render_template("tag.html", photos = None, base64=base64, tag_txt = tag_search_raw, tag_id = 0)
-	return render_template('explore.html',albums=albums,base64=base64, tags = tags)
+	return render_template('explore.html',albums=albums,base64=base64, tags = tags, photos=getPhotos())
+
+
+
+
+def getAlbums(name=None):
+	if name is None or name=="":
+		return getPopularAlbums()
+	else:
+		print(f'name: {name}')
+		cursor.execute(f'''SELECT cover_img,album_name,album_id FROM Albums WHERE album_name="{name}"''')
+		data = cursor.fetchall()
+		return data
+
+@app.route('/browse', methods=['GET','POST'])
+def browse():
+	search_query = request.form.get('browse_query')
+	print(f"search_query: '{search_query}'")
+	option = request.form.get('browse_option')
+	not_found = False
+	if option=='photo':
+		data = getPhotos(search_query)
+		if data == ():
+			not_found = True
+		return render_template('explore.html', albums=None, photos=data,base64=base64, tags=getPopularTags(),notFound = not_found)
+	else:
+		data = getAlbums(search_query)
+		if data == ():
+			not_found = True
+		return render_template('explore.html', albums=data, photos=None, base64=base64, tags=getPopularTags(),notFound = not_found)
+
+
+
+
 
 
 @app.route('/')

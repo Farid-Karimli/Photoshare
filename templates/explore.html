@@ -33,17 +33,32 @@
                 <ul>
                     <li><a href='/'>Home</a></li>
                     <li><a href='/explore' id="active">Explore</a></li>
-                    <li><a href='/albums'>My albums</a></li>
-                    <li><a href='/friends'>Friends</a></li>
-                    <li><a href='/profile'>Profile</a></li>
                     {%  if not need_login %}
+                        <li><a href='/albums'>My albums</a></li>
+                        <li><a href='/friends'>Friends</a></li>
+                        <li><a href='/profile'>Profile</a></li>
                         <li><a href='/logout'>Logout</a></li>
                     {%  endif %}
                 </ul>
             </nav>
     </header>
-    <h2>Explore Albums</h2>
-    <div id="albums-view">
+
+    <h2>Explore Albums and Photos </h2>
+
+    <form method="post" id="browse" action="/browse">
+            <label>
+                <input type="text" class="text-input" name="browse_query"/>
+            </label>
+            <select name="browse_option" id="browse_option" required>
+                <option value="album">Albums</option>
+                <option value="photo">Photos</option>
+            </select>
+            <input type="submit" class="submit" value="Search">
+    </form>
+
+    {% if albums %}
+     <h3>Albums</h3>
+     <div id="albums-view">
 
         {% for album in albums %}
             {# album = (cover_img, album_name, album_id) #}
@@ -54,20 +69,34 @@
             </div>
         {% endfor %}
     </div>
+    {% endif %}
+
+    {% if photos %}
+    <h3>Photos</h3>
+    <div id="albums-view">
+            {% for photo in photos %}
+                {# photo = (imgdata, caption, picture_id) #}
+                <div id="album">
+                    <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}' width="100px" height="100px"/>
+                    <p><a href="/album/{{ photo[3] }}/photo/{{ photo[2] }}">{{ photo[1] }}</a></p>
+                </div>
+            {% endfor %}
+    {% endif %}
+    </div>
 
     <div id ="tags-view">
         <h2>Explore Tags</h2>
         <form method="post" id="tagsearch-form">
-        <!-- <form action="/tags?search=multiple" method="post" id="tagsearch-form"> -->
             <label>
                 <input type="text" class="text-input" name="tags"/>
             </label>
             <input type="submit" class="submit" value="Search">
         </form>
         <div id="tags">
-        {% for tag in tags %}            
+
+        {% for tag in tags %}
+            {# tag = (tag_id, tag_text) #}
             <p><a href="/tags/{{tag[0]}}">#{{ tag[1] }} </a></p>
- 
         {% endfor %}
     </div>
 
