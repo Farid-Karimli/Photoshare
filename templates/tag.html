@@ -38,6 +38,12 @@
                 </div>
                 {% endfor %}
             </div>
+            {% if user %}
+                <a href='/albums'>Cancel</a>
+            {% else %}
+                <a href='/explore'>Cancel</a>
+            {% endif %}
+            
         {% else %}
             {% if userNoPhotos %} 
                 <h2> You don't have any photos with this tag(s). </h2>

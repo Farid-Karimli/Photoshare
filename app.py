@@ -461,6 +461,14 @@ def getMyPhotosWithMultipleTags(tag_search, uid):
 		return photos
 	return None
 
+def getAlbumOwner(id):
+	cursor = conn.cursor()
+	cursor.execute(f'''SELECT owner FROM albums Where album_id = {id}''')
+	owner = cursor.fetchall()[0][0]
+	conn.commit()
+	return owner
+
+
 
 # begin photo uploading code
 # photos uploaded using base64 encoding so they can be directly embeded in HTML
@@ -535,13 +543,14 @@ def photosWithManyTags(search, uid):
 		tag_search = ((search.replace("#", "")).lower()).split(", ")
 		if (int(uid) == 0):
 			photos = getPhotosWithMultipleTags(tag_search)
+			return render_template("tag.html", photos=photos, base64=base64, tag_txt=search, user = False)
 
 		else:
 			photos = getMyPhotosWithMultipleTags(tag_search, uid)
 	if photos == None and int(uid) != 0:
 		return render_template("tag.html", photos=photos, base64=base64, tag_txt=search, userNoPhotos=True)
-	return render_template("tag.html", photos=photos, base64=base64, tag_txt=search)
-
+	else:
+		return render_template("tag.html", photos=photos, base64=base64, tag_txt=search, user = True)
 
 @app.route('/add_friend', methods=['POST'])
 @flask_login.login_required
@@ -671,7 +680,6 @@ def albums_public():
 
 @app.route("/album/<id>", methods=['GET'])
 def album(id):
-	uid = getUserIdFromEmail(flask_login.current_user.id)
 	cursor = conn.cursor()
 	cursor.execute(
 	    f"SELECT album_name,date_created,cover_img FROM Albums WHERE album_id={id}")
@@ -679,7 +687,12 @@ def album(id):
 	cursor.execute(
 	    f'SELECT picture_id, imgdata,caption FROM Pictures WHERE album_id = {id}')
 	photos = cursor.fetchall()
-	return render_template("album.html", photos=photos, album=album, album_id=id, base64=base64)
+	if(flask_login.current_user.is_authenticated):
+		owner = getAlbumOwner(id)
+		uid = getUserIdFromEmail(flask_login.current_user.id)
+		if(owner == uid):
+			return render_template("album.html", photos=photos, album=album, album_id=id, base64=base64, unauth = False)
+	return render_template("album.html", photos=photos, album=album, album_id=id, base64=base64, unauth = True)
 
 
 @app.route("/album/<album_id>/photo/<photo_id>", methods=['GET', 'POST'], defaults={'comment_filter': None})
@@ -832,8 +845,8 @@ def edit_profile():
 
 @app.route('/explore', methods=['GET', "POST"])
 def explore():
+	
 	cursor = conn.cursor()
-
 	cursor.execute('''SELECT cover_img, album_name, album_id
 						FROM Albums
 						CROSS JOIN Users
@@ -843,37 +856,9 @@ def explore():
 	tags = getPopularTags()
 
 	if request.method == "POST":
-		tag_search_raw = request.form.get('tags')
-		if tag_search_raw:
-			tag_search = ((tag_search_raw.replace("#", "")).lower()).split(", ")
-			cursor.execute('''DROP TABLE IF EXISTS temp''')
-			cursor.execute('''CREATE TABLE temp( tags char(20))''')
-			conn.commit()
-			for t in tag_search:
-				cursor.execute('''INSERT INTO temp SET tags = %s ''', t)
-
-			cursor.execute('''SELECT DISTINCT H.picture_id  FROM has_tag H
-							CROSS JOIN Tags T, Temp M
-							WHERE H.tag_id = T.tag_id
-							AND M.tags = T.text
-							GROUP BY (H.picture_id)
-							HAVING Count(H.picture_id) >= %s''', len(tag_search))
-			pics_with_tags_raw = cursor.fetchall()
-			if(pics_with_tags_raw):
-				pics_with_tags = []
-				for p in pics_with_tags_raw:
-					pics_with_tags.append(p[0])
-				format_strings = ','.join(['%s'] * len(pics_with_tags))
-				cursor.execute("SELECT DISTINCT P.picture_id, P.imgdata, P.caption, P.album_id FROM has_tag H\
-						CROSS JOIN Pictures P\
-						ON P.picture_id = H.picture_id\
-						WHERE P.picture_id in (%s)" % format_strings, tuple(pics_with_tags))
-				photos = cursor.fetchall()
-				cursor.execute('''DROP TABLE temp''')
-				cursor.fetchall()
-				conn.commit()
-				return render_template("tag.html", photos=photos, base64=base64, tag_txt=tag_search_raw, tag_id=0)
-			return render_template("tag.html", photos=None, base64=base64, tag_txt=tag_search_raw, tag_id=0)
+		search = request.form.get('tags')
+		if search:
+			return flask.redirect(url_for('photosWithManyTags', search= search, uid = 0))
 	return render_template('explore.html',albums=albums,base64=base64, tags = tags, photos=getPhotos())
 
 
