@@ -290,6 +290,9 @@
                         {%  endfor %}
                     </div>
                 {% endif %}
+                {% if tag_owner %}
+                    <p><a href="/add_tag/{{photo_id}}">Add Tag</a></p>
+                {% endif %}
             </div>
 
 

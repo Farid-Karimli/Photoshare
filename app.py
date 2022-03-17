@@ -694,24 +694,47 @@ def album(id):
 			return render_template("album.html", photos=photos, album=album, album_id=id, base64=base64, unauth = False)
 	return render_template("album.html", photos=photos, album=album, album_id=id, base64=base64, unauth = True)
 
+@app.route("/add_tag/<photo_id>",methods=['GET','POST'])
+def add_tag(photo_id):
+	if request.method=='POST':
+		tag_text = request.form.get('text')
+		cursor = conn.cursor()
+		cursor.execute(f"INSERT INTO tags(text) VALUES ('{tag_text}')")
+		conn.commit()
+		cursor.execute(f"SELECT tag_id FROM tags WHERE text='{tag_text}'")
+		tag_id = cursor.fetchall()[0][0]
+		cursor.execute(f"INSERT INTO has_tag(tag_id,picture_id) VALUES ({tag_id},{photo_id})")
+		conn.commit()
+		cursor.execute(f'SELECT album_id FROM Pictures WHERE picture_id={photo_id}')
+		album_id=cursor.fetchall()[0][0]
+		return flask.redirect(url_for('photo',album_id=album_id,photo_id=photo_id))
+	return render_template("add_tag.html",id=photo_id)
 
 @app.route("/album/<album_id>/photo/<photo_id>", methods=['GET', 'POST'], defaults={'comment_filter': None})
 def photo(album_id, photo_id, comment_filter):
 	if flask_login.current_user.is_authenticated:
 		uid = getUserIdFromEmail(flask_login.current_user.id)
+
 	else:
 		uid=20
+
 	cursor = conn.cursor()
 	cursor.execute('''SELECT imgdata,caption,likes,user_id FROM Pictures WHERE album_id=%s and picture_id = %s''',
 				   (album_id, photo_id))
 	data = cursor.fetchall()[0]
 	pic_owner = data[3]
+	if pic_owner==uid:
+		can_add_tag = True
+	else:
+		can_add_tag=False
 	userInfo = getUserInfo(pic_owner)
 	if request.method == "POST":
 		if flask_login.current_user.is_authenticated:
 			uid = getUserIdFromEmail(flask_login.current_user.id)
+			can_add_tag=True
 		else:
 			uid = 20
+			can_add_tag=False
 		comment = request.form.get('comment')
 		to_delete = request.form.get('delete')
 		like = request.form.get('like')
@@ -742,7 +765,7 @@ def photo(album_id, photo_id, comment_filter):
 		elif like:
 			print('in like')
 			if(pic_owner == uid):
-				return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64, comments=getPhotoComments(photo_id), user=uid, dismiss_like=True, tags=getPhotoTags(photo_id), user_info=userInfo)
+				return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64, comments=getPhotoComments(photo_id), user=uid, dismiss_like=True, tags=getPhotoTags(photo_id), user_info=userInfo,tag_owner=can_add_tag)
 			else:
 				cursor.execute(
 				    '''SELECT count(*) FROM likes WHERE user_id = %s and photo_id = %s  ''', (uid, photo_id))
@@ -775,11 +798,11 @@ def photo(album_id, photo_id, comment_filter):
 
 			print(f'Filtering... by filter: {comment_query}')
 			return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,
-								   comments=getPhotoComments(photo_id, comment_query), user=uid, tags=getPhotoTags(photo_id), user_info=userInfo, users_liked=users_liked)
+								   comments=getPhotoComments(photo_id, comment_query), user=uid, tags=getPhotoTags(photo_id), user_info=userInfo, users_liked=users_liked,tag_owner=can_add_tag)
 
 		return flask.redirect(url_for('photo', album_id=album_id, photo_id=photo_id))
 
-	return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64, comments=getPhotoComments(photo_id, comment_filter), user=uid, tags=getPhotoTags(photo_id), user_info=userInfo, get_liked_users=False,users_liked = getLikedUsers(photo_id))
+	return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64, comments=getPhotoComments(photo_id, comment_filter), user=uid, tags=getPhotoTags(photo_id), user_info=userInfo, get_liked_users=False,users_liked = getLikedUsers(photo_id),tag_owner=can_add_tag)
 
 
 @app.route("/tags/<tag_id>", methods=['GET'])
