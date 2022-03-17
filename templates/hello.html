@@ -71,10 +71,10 @@
                 <ul>
                     <li><a href='/' id="active">Home</a></li>
                     <li><a href='/explore' >Explore</a></li>
-                    <li><a href='/albums'>My albums</a></li>
-                    <li><a href='/friends'>Friends</a></li>
-                    <li><a href='/profile'>Profile</a></li>
                     {%  if not need_login %}
+                        <li><a href='/albums'>My albums</a></li>
+                        <li><a href='/friends'>Friends</a></li>
+                        <li><a href='/profile'>Profile</a></li>
                         <li><a href='/logout'>Logout</a></li>
                     {%  endif %}
 
@@ -92,13 +92,16 @@
     <title>Photoshare</title>
     {% if info %}
         <h1>Welcome back, {{ info['firstname'] + ' ' + info['lastname'] }}!</h1>
+    {% else %}
+         <h1>Welcome!</h1>
     {% endif %}
+
 
     {% if need_login %}
-        <p>You should <a href='/login'>login!</a></p>
+        <p><a href='/login'>Login</a> or <a href="/register">create an account</a></p>
     {% endif %}
 
-<section id="home-view">
+    <section id="home-view">
             {#    contribution info = ((id,firstname,lastname,contribution_score), ...) #}
             <div id="most-contributions">
                 <h3>User with the highest contributions</h3>
@@ -110,6 +113,7 @@
                 {% endfor %}
             </div>
 
+            {% if recent_albums %}
             <div id="recent-albums">
                 {# recent_albums = album_id,album_name,date_created,owner,cover_img #}
                 <h3>Recently created albums: </h3>
@@ -120,6 +124,7 @@
                     </div>
                 {% endfor %}
             </div>
+            {% endif %}
 
             {% if recommend_friends %}
             <div id="also-like">

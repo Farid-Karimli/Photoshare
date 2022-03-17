@@ -260,7 +260,7 @@
                     {% endfor %}
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <label>
-                        <input type="text" form='comment-form' name="filter" value="" placeholder="Search comments..."/>
+                        <input type="text" form='comment-form' name="filter" value="" placeholder="Search comments..." id="comment_search"/>
                         <input type="submit" form='comment-form' value="Search"/>
                     </label>
                 </div>
@@ -339,6 +339,14 @@
                 }
 
             }
+
+            document.getElementById('comment_search').onkeypress = checkEnter;
+            function checkEnter(e){
+                 e = e || event;
+                 var txtArea = /textarea/i.test((e.target || e.srcElement).tagName);
+                 return txtArea || (e.keyCode || e.which || e.charCode || 0) !== 13;
+            }
+
         </script>
 
 

@@ -171,12 +171,11 @@ def unauth():
 @app.route('/logout')
 def logout():
 	flask_login.logout_user()
-	return render_template('hello.html', message='Logged out', need_login=True)
-
+	return flask.redirect(url_for('unregistered'))
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
-	return render_template('unauth.html')
+	return flask.redirect(url_for('unregistered'))
 
 # you can specify specific methods (GET/POST) in function header instead of inside the functions as seen earlier
 
@@ -798,7 +797,7 @@ def photo(album_id, photo_id, comment_filter):
 
 			print(f'Filtering... by filter: {comment_query}')
 			return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,
-								   comments=getPhotoComments(photo_id, comment_query), user=uid, tags=getPhotoTags(photo_id), user_info=userInfo, users_liked=users_liked,tag_owner=can_add_tag)
+								   comments=getPhotoComments(photo_id, comment_query), user=uid, tags=getPhotoTags(photo_id), user_info=userInfo, users_liked = getLikedUsers(photo_id),tag_owner=can_add_tag)
 
 		return flask.redirect(url_for('photo', album_id=album_id, photo_id=photo_id))
 
@@ -924,7 +923,9 @@ def browse():
 		return render_template('explore.html', albums=data, photos=None, base64=base64, tags=getPopularTags(),notFound = not_found)
 
 
-
+@app.route('/',methods=['GET'])
+def unregistered():
+	return render_template('hello.html', unauth=True,info=None,contribution_info = getAllUsersContribution(),recent_albums=None,recommend_friends=None,base64=base64,need_login=True)
 
 
 
@@ -939,6 +940,7 @@ def protected():
 	info = {'firstname':info_raw[0],'lastname': info_raw[1]}
 	return render_template('hello.html', name=flask_login.current_user.id,info=info,contribution_info = getAllUsersContribution(),recent_albums=getUserRecentAlbums(uid),recommend_friends=getTopFriendsOfFriends(uid),base64=base64)
 # default page
+
 @app.route("/", methods=['GET'])
 def hello():
 	return render_template('hello.html', message='Welcome to Photoshare')
