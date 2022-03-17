@@ -335,7 +335,7 @@ def isEmailUnique(email):
 def getAllUsersContribution():
 	cursor = conn.cursor()
 	cursor.execute(
-	    """SELECT user_id,firstname,lastname,contribution_score FROM Users ORDER BY contribution_score DESC LIMIT 10;""")
+	    """SELECT user_id,firstname,lastname,contribution_score FROM Users WHERE NOT firstname="Guest" ORDER BY contribution_score DESC LIMIT 10;""")
 	data = cursor.fetchall()
 	return data
 
@@ -702,10 +702,11 @@ def photo(album_id, photo_id, comment_filter):
 	else:
 		uid=20
 	cursor = conn.cursor()
-	cursor.execute('''SELECT imgdata,caption,likes FROM Pictures WHERE album_id=%s and picture_id = %s''',
+	cursor.execute('''SELECT imgdata,caption,likes,user_id FROM Pictures WHERE album_id=%s and picture_id = %s''',
 				   (album_id, photo_id))
 	data = cursor.fetchall()[0]
-	userInfo = getUserInfo(uid)
+	pic_owner = data[3]
+	userInfo = getUserInfo(pic_owner)
 	if request.method == "POST":
 		if flask_login.current_user.is_authenticated:
 			uid = getUserIdFromEmail(flask_login.current_user.id)
@@ -764,12 +765,12 @@ def photo(album_id, photo_id, comment_filter):
 					cursor.execute(
 					    '''INSERT INTO likes (user_id, photo_id) VALUES (%s, %s)''', (uid, photo_id))
 					conn.commit()
-		elif users_liked:
+			'''elif users_liked:
 			users_liked = getLikedUsers(photo_id)
 			print(users_liked)
 			return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,
 								   comments=getPhotoComments(photo_id), user=uid, get_liked_users=True,
-								   users_liked=users_liked, user_info=userInfo, tags=getPhotoTags(photo_id))
+								   users_liked=users_liked, user_info=userInfo, tags=getPhotoTags(photo_id))'''
 		elif comment_query:
 
 			print(f'Filtering... by filter: {comment_query}')
@@ -778,7 +779,7 @@ def photo(album_id, photo_id, comment_filter):
 
 		return flask.redirect(url_for('photo', album_id=album_id, photo_id=photo_id))
 
-	return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64, comments=getPhotoComments(photo_id, comment_filter), user=uid, tags=getPhotoTags(photo_id), user_info=userInfo, get_liked_users=False)
+	return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64, comments=getPhotoComments(photo_id, comment_filter), user=uid, tags=getPhotoTags(photo_id), user_info=userInfo, get_liked_users=False,users_liked = getLikedUsers(photo_id))
 
 
 @app.route("/tags/<tag_id>", methods=['GET'])

@@ -172,7 +172,17 @@
      .user-row h2 {
         word-spacing: 30px;
     } 
-    
+
+     #popup {
+         border: 1px solid black;
+         position: fixed;
+         margin-top: 50vh;
+         z-index: 20;
+         display: none;
+         background-color: white;
+     }
+
+
 </style>
 <body>
 <header>
@@ -216,7 +226,7 @@
                 <div id="likes">
                     <div id="like-inner">
                         <button id='button-icon' class='like' form="comment-form" name="like" type="submit" value="{{ photo_id }}"><i class="fas fa-heart fa-lg"></i></button>
-                        <button id='users_liked_button' class='like' form="comment-form" name="users_liked" type="submit" value="{{ data[2] }}"><i>{{ data[2] }} likes.</i></button>
+                        <button id='users_liked_button' class='like' name="users_liked" onclick="popup('show')" value="{{ data[2] }}"><i>{{ data[2] }} likes.</i></button>
                     </div>
                     {% if dismiss_like %}
                         <div class="error">
@@ -285,7 +295,7 @@
 
         </div>
 
-        {% if get_liked_users %}
+        {#{% if get_liked_users %}
             <div id="overlay_liked_users" class="overlay">
                 <div class="overlay-content">
 
@@ -300,10 +310,33 @@
 
                 </div>
             </div>
-        {%endif %}
+        {%endif %}#}
+
+        <div id="popup">
+            <h3 id = "title_liked">Users who liked this photo:</h3>
+
+                        {%  for row in users_liked %}
+                            <div class="user-row">
+                                <p>{{row[2]}} {{row[3]}}</p>
+                            </div>
+                        {%  endfor %}
+
+            <p onclick="popup()">Close</p>
+            <i class="fas fa-xmark"></i>
+        </div>
 
 
+        <script>
+            function popup(status) {
+                if(status==='show') {
+                     document.getElementById('popup').style.display = 'block';
 
+                } else {
+                     document.getElementById('popup').style.display = 'none';
+                }
+
+            }
+        </script>
 
 
     
