@@ -71,6 +71,15 @@
                 <img src="{{ url_for('static',filename='camera.png') }}" alt="" width="50px" height="50px"/>
                 <h1>Photoshare</h1>
             </div>
+            {% if unauth %}
+                <nav>
+                    <ul>
+                        <li><a href='/'>Home</a></li>
+                        <li><a href='/explore'>Explore</a></li>
+                        <li><a href="/login">Login</a></li>
+                    </ul>
+                </nav>
+            {% else %}
             <nav>
                 <ul>
                     <li><a href='/'>Home</a></li>
@@ -83,6 +92,7 @@
                     {%  endif %}
                 </ul>
             </nav>
+            {% endif %}
     </header>
 
     <h2>Explore Albums and Photos </h2>

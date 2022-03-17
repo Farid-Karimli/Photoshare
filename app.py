@@ -697,14 +697,20 @@ def album(id):
 
 @app.route("/album/<album_id>/photo/<photo_id>", methods=['GET', 'POST'], defaults={'comment_filter': None})
 def photo(album_id, photo_id, comment_filter):
-	uid = getUserIdFromEmail(flask_login.current_user.id)
+	if flask_login.current_user.is_authenticated:
+		uid = getUserIdFromEmail(flask_login.current_user.id)
+	else:
+		uid=20
 	cursor = conn.cursor()
 	cursor.execute('''SELECT imgdata,caption,likes FROM Pictures WHERE album_id=%s and picture_id = %s''',
 				   (album_id, photo_id))
 	data = cursor.fetchall()[0]
 	userInfo = getUserInfo(uid)
 	if request.method == "POST":
-		uid = getUserIdFromEmail(flask_login.current_user.id)
+		if flask_login.current_user.is_authenticated:
+			uid = getUserIdFromEmail(flask_login.current_user.id)
+		else:
+			uid = 20
 		comment = request.form.get('comment')
 		to_delete = request.form.get('delete')
 		like = request.form.get('like')
@@ -845,7 +851,10 @@ def edit_profile():
 
 @app.route('/explore', methods=['GET', "POST"])
 def explore():
-	
+	if not flask_login.current_user.is_authenticated:
+		unAuth=True
+	else:
+		unAuth=False
 	cursor = conn.cursor()
 	cursor.execute('''SELECT cover_img, album_name, album_id
 						FROM Albums
@@ -859,12 +868,12 @@ def explore():
 		search = request.form.get('tags')
 		if search:
 			return flask.redirect(url_for('photosWithManyTags', search= search, uid = 0))
-	return render_template('explore.html',albums=albums,base64=base64, tags = tags, photos=getPhotos())
+	return render_template('explore.html',albums=albums,base64=base64, tags = tags, photos=getPhotos(),unauth=unAuth)
 
 
 
 
-def getAlbums(name=None):
+def getAlbumsWithName(name=None):
 	if name is None or name=="":
 		return getPopularAlbums()
 	else:
@@ -885,7 +894,7 @@ def browse():
 			not_found = True
 		return render_template('explore.html', albums=None, photos=data,base64=base64, tags=getPopularTags(),notFound = not_found)
 	else:
-		data = getAlbums(search_query)
+		data = getAlbumsWithName(search_query)
 		if data == ():
 			not_found = True
 		return render_template('explore.html', albums=data, photos=None, base64=base64, tags=getPopularTags(),notFound = not_found)

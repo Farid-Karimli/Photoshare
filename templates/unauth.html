@@ -17,19 +17,13 @@
         <nav>
             <ul>
                 <li><a href='/'>Home</a></li>
-                <li><a href='/explore' id="active">Explore</a></li>
-                <li><a href='/albums'>My albums</a></li>
-                <li><a href='/friends'>Friends</a></li>
-                <li><a href='/profile'>Profile</a></li>
-                {%  if not need_login %}
-                    <li><a href='/logout'>Logout</a></li>
-                {%  endif %}
+                <li><a href='/explore'>Explore</a></li>
             </ul>
         </nav>
     </header>
 
-    <h3> Yikes, looks like you need to <a href='/login'>login</a></h3>
-    <h3> or <a href='/register'>make an account</a></h3>
+    <h3><a href='/login'>Login</a></h3>
+    <h3> or <a href='/register'>Create an account! </a></h3>
 </body>
 
 
