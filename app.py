@@ -153,6 +153,8 @@ def login():
 			user.id = email
 			flask_login.login_user(user)  # okay login in user
 			# protected is a function defined in this file
+			print("User has logged in")
+			print("User: ", flask_login.current_user.id)
 			return flask.redirect(flask.url_for('protected'))
 		found = False
 		return flask.redirect(url_for('unauth'))
@@ -921,11 +923,6 @@ def browse():
 		return render_template('explore.html', albums=data, photos=None, base64=base64, tags=getPopularTags(),notFound = not_found)
 
 
-@app.route('/',methods=['GET'])
-def unregistered():
-	return render_template('hello.html', unauth=True,info=None,contribution_info = getAllUsersContribution(),recent_albums=None,recommend_friends=None,base64=base64,need_login=True)
-
-
 
 
 @app.route('/')
@@ -938,6 +935,10 @@ def protected():
 	info = {'firstname':info_raw[0],'lastname': info_raw[1]}
 	return render_template('hello.html', name=flask_login.current_user.id,info=info,contribution_info = getAllUsersContribution(),recent_albums=getUserRecentAlbums(uid),recommend_friends=getTopFriendsOfFriends(uid),base64=base64)
 # default page
+
+@app.route("/logged_out",methods=['GET'])
+def unregistered():
+	return render_template('hello.html', unauth=True,info=None,contribution_info = getAllUsersContribution(),recent_albums=None,recommend_friends=None,base64=base64,need_login=True)
 
 @app.route("/", methods=['GET'])
 def hello():
