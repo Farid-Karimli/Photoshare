@@ -492,12 +492,10 @@ def upload_file(album_id):
 		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption,album_id) VALUES (%s, %s, %s, %s )''',
 		               (photo_data, uid, caption, album_id))
 		cursor.execute(
-		    '''SELECT picture_id FROM Pictures where imgdata  = %s''', photo_data)
+		    '''SELECT picture_id from Pictures where picture_id =(SELECT LAST_INSERT_ID())''')
 		photo_id = cursor.fetchall()[0][0]
-		print(photo_id)
 		cursor.execute(
 		    f"UPDATE Users SET contribution_score = contribution_score+1 WHERE user_id = {uid};")
-		print("HERE")
 		for t in tags:
 			cursor.execute('''SELECT count(*) FROM Tags WHERE text = %s  ''', t)
 			tag_exists = cursor.fetchall()[0][0]
