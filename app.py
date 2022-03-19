@@ -496,7 +496,7 @@ def getYouMayAlsoLike(uid):
 							Group by H.tag_id, P.user_id
 							order by count(*) Desc LIMIT 5;''')
 		top_5_raw = cursor.fetchall()
-	if len(top_5_raw < 5):
+	if len(top_5_raw) < 5:
 		return None
 
 	#getting top photos with given tags
