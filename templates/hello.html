@@ -36,10 +36,6 @@
         justify-content: space-between;
         gap: 7vw;
     }
-
-    #home-view * {
-
-    }
     #most-contributions {
         display: flex;
         flex-direction: column;
@@ -49,7 +45,7 @@
         margin: 2vh 0;
     }
 
-    #recent-albums * {
+    #recent-albums {
         box-sizing: border-box;
     }
     #recent-albums div {
@@ -60,6 +56,18 @@
         margin: auto;
 
     }
+
+    #rec-photos {
+        box-sizing: border-box;
+    }
+    #rec-photos div {
+         margin: 5vh 0;
+    }
+
+    #rec-photos img{
+        align-items: center;
+    }
+
 </style>
 <body>
     <header>
@@ -119,8 +127,10 @@
                 <h3>Recently created albums: </h3>
                 {% for album in recent_albums %}
                     <div id="album">
-                        <img id='image' src='data:image/jpg;base64, {{ base64.b64encode(album[4]).decode("ascii") }}'  alt="" width="50px" height="50px"/>
-                        <p>{{ album[1] }}</p>
+                        <p><a href="/album/{{ album[0] }}"><img id='image' src='data:image/jpg;base64, {{ base64.b64encode(album[4]).decode("ascii") }}'  alt="" width="50px" height="50px"/></a></p>
+                        <p><a href="/album/{{ album[0] }}">{{ album[1] }}</a></p>
+                    
+                        
                     </div>
                 {% endfor %}
             </div>
@@ -136,6 +146,18 @@
                         <img id='image' src='data:image/jpg;base64, {{ base64.b64encode(friend[9]).decode("ascii") }}'  alt="" width="50px" height="50px"/>
                         {% endif %}
                         <a href="profile/{{ friend[0] }}"><p>{{ friend[3] + ' ' + friend[4] }}</p></a>
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if recommend_photos %}
+            <div id="rec-photos">
+                <h3>You may also like </h3>
+                {% for photo in recommend_photos %}
+                    <div id="photo">
+                        <p><a href="/album/{{ photo[2] }}/photo/{{ photo[3] }}"><img id='image' src='data:image/jpg;base64, {{ base64.b64encode(photo[1]).decode("ascii") }}'  alt="" width="50px" height="50px"/></a></p>
+                        <p><a href="/album/{{ photo[2] }}/photo/{{ photo[3] }}">{{ photo[0] }}</a></p>
                     </div>
                 {% endfor %}
             </div>

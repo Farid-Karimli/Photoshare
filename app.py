@@ -462,6 +462,8 @@ def getMyPhotosWithMultipleTags(tag_search, uid):
 		return photos
 	return None
 
+
+
 def getAlbumOwner(id):
 	cursor = conn.cursor()
 	cursor.execute(f'''SELECT owner FROM albums Where album_id = {id}''')
@@ -469,6 +471,59 @@ def getAlbumOwner(id):
 	conn.commit()
 	return owner
 
+
+def getYouMayAlsoLike(uid):
+	cursor = conn.cursor()
+
+	#getting the top 5 most commonly used tags of the user
+	cursor.execute(f'''SELECT * FROM
+						(SELECT T.tag_id 
+						FROM has_tag H, Pictures P, tags t 
+						WHERE P.picture_id =H.Picture_id 
+						AND T.tag_id = H.tag_id
+						AND P.user_id = {uid}
+						GROUP BY H.tag_id, P.user_id
+						ORDER BY count(*) DESC LIMIT 5 ) AS top_tags''')
+	top_5_raw = cursor.fetchall()
+	print(top_5_raw)
+	#user has enough tags for custom recommendation recommend photos with top 5 tags
+	if len(top_5_raw) != 5:
+		cursor.execute(f''' SELECT P.user_id, h.tag_id, t.text, Count(*) 
+							from has_tag H, Pictures P, tags t 
+							Where P.picture_id =H.Picture_id 
+							And T.tag_id = H.tag_id
+							And P.user_id != {uid}
+							Group by H.tag_id, P.user_id
+							order by count(*) Desc LIMIT 5;''')
+		top_5_raw = cursor.fetchall()
+
+	#getting top photos with given tags
+	cursor.execute(f''' SELECT X.picture_id FROM(
+						SELECT P.picture_id, Count(H.tag_id) AS CNUMTAGS 
+						FROM HAS_Tag H, ((SELECT t1.picture_id, COUNT(*) AS CMATCH FROM (
+						(SELECT DISTINCT P.picture_id FROM has_tag H, Pictures P WHERE P.picture_id = H.picture_id AND H.tag_id = {top_5_raw[0][0]} AND P.user_id != {uid})
+						UNION ALL 
+						(SELECT DISTINCT P.picture_id FROM has_tag H, Pictures P WHERE P.picture_id = H.picture_id AND H.tag_id = {top_5_raw[1][0]} AND P.user_id != {uid})
+						UNION ALL
+						(SELECT DISTINCT P.picture_id FROM has_tag H, Pictures P WHERE P.picture_id = H.picture_id AND H.tag_id = {top_5_raw[2][0]} AND P.user_id != {uid})
+						UNION ALL 
+						(SELECT DISTINCT P.picture_id FROM has_tag H, Pictures P WHERE P.picture_id = H.picture_id AND H.tag_id = {top_5_raw[3][0]} AND P.user_id != {uid})
+						UNION ALL
+						(SELECT DISTINCT P.picture_id FROM has_tag H, Pictures P WHERE P.picture_id = H.picture_id AND H.tag_id = {top_5_raw[4][0]} AND P.user_id != {uid})
+						) AS t1 GROUP BY picture_id HAVING count(*) >= 1 ORDER BY CMATCH DESC)) P
+						WHERE P.picture_id = H.picture_id GROUP BY P.picture_id ORDER BY P.CMATCH DESC, CNUMTAGS ASC LIMIT 5) X''')
+	rec_photos_raw = cursor.fetchall()
+	print(rec_photos_raw)
+	conn.commit()
+	rec_photos = []
+	for photo in rec_photos_raw:
+		rec_photos.append(photo[0])
+	cursor.execute(f"SELECT caption, imgdata, album_id, picture_id FROM Pictures WHERE picture_id IN ({rec_photos[0]}, {rec_photos[1]}, {rec_photos[2]}, {rec_photos[3]}, {rec_photos[4]}) ORDER BY FIELD(picture_id, {rec_photos[0]}, {rec_photos[1]}, {rec_photos[2]}, {rec_photos[3]}, {rec_photos[4]} )")
+	photos = cursor.fetchall()
+	return photos
+	
+	
+	
 
 
 # begin photo uploading code
@@ -933,7 +988,9 @@ def protected():
 	cursor.execute(f"SELECT firstname,lastname FROM Users WHERE user_id = {uid}")
 	info_raw = cursor.fetchall()[0]
 	info = {'firstname':info_raw[0],'lastname': info_raw[1]}
-	return render_template('hello.html', name=flask_login.current_user.id,info=info,contribution_info = getAllUsersContribution(),recent_albums=getUserRecentAlbums(uid),recommend_friends=getTopFriendsOfFriends(uid),base64=base64)
+	
+	
+	return render_template('hello.html', name=flask_login.current_user.id,info=info,contribution_info = getAllUsersContribution(),recent_albums=getUserRecentAlbums(uid),recommend_friends=getTopFriendsOfFriends(uid),base64=base64, recommend_photos = getYouMayAlsoLike(uid))
 # default page
 
 @app.route("/logged_out",methods=['GET'])
