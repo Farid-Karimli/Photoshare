@@ -184,6 +184,7 @@ def unauthorized_handler():
 
 @app.route("/register", methods=['GET'])
 def register():
+	print("in register")
 	return render_template('register.html', supress='True')
 
 
@@ -208,7 +209,8 @@ def register_user():
 		user = User()
 		user.id = email
 		flask_login.login_user(user)
-		return render_template('hello.html', info=context, message='Account Created!')
+		uid = getUserIdFromEmail(flask_login.current_user.id)
+		return render_template('hello.html', message='Account Created!', name=flask_login.current_user.id,info=context,contribution_info = getAllUsersContribution(),recent_albums=getUserRecentAlbums(uid),recommend_friends=getTopFriendsOfFriends(uid),base64=base64, recommend_photos = getYouMayAlsoLike(uid))
 	else:
 		print("couldn't find all tokens")
 		return flask.redirect(flask.url_for('register'))
