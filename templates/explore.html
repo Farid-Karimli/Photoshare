@@ -115,9 +115,9 @@
         {% for album in albums %}
             {# album = (cover_img, album_name, album_id) #}
             <div id="album">
-                <img src='data:image/jpg;base64, {{ base64.b64encode(album[0]).decode("ascii") }}' width="100px" height="100px"/>
+                <p><a href="/album/{{ album[2] }}"><img src='data:image/jpg;base64, {{ base64.b64encode(album[0]).decode("ascii") }}' width="100px" height="100px"/></a></p>
                 <p><a href="/album/{{ album[2] }}">{{ album[1] }}</a></p>
-
+              
             </div>
         {% endfor %}
     </div>
@@ -129,7 +129,7 @@
             {% for photo in photos %}
                 {# photo = (imgdata, caption, picture_id) #}
                 <div id="album">
-                    <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}' width="100px" height="100px"/>
+                    <p><a href="/album/{{ photo[3] }}/photo/{{ photo[2] }}"><img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}' width="100px" height="100px"/></a></p>
                     <p><a href="/album/{{ photo[3] }}/photo/{{ photo[2] }}">{{ photo[1] }}</a></p>
                 </div>
             {% endfor %}

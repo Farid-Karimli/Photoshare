@@ -1,29 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<script>
 
-    function liked_users_overlay(on) {
-        if(on){
-            document.getElementById("overlay_liked_users").style.width = "100%";
-        }
-        else{
-            document.getElementById("overlay_liked_users").style.width = "0%";
-
-        }
-    };
-
-    function comment_overlay(on) {
-        if(on){
-            document.getElementById("overlay_comment").style.width = "100%";
-        }
-        else{
-            document.getElementById("overlay_comment").style.width = "0%";
-
-        }
-    };
-
-
-</script>
 <head>
     <meta charset="UTF-8">
     <title>Photo</title>
@@ -169,7 +146,7 @@
         font-size: 50px;
     }
 
-     .user-row h2 {
+    .user-row h2 {
         word-spacing: 30px;
     } 
 
@@ -179,8 +156,9 @@
          margin-top: 50vh;
          z-index: 20;
          display: none;
-         background-color: white;
-     }
+         background-color: #FCF8EC;
+    }
+
 
 
 </style>
@@ -270,7 +248,7 @@
 
             <form action="/album/{{ album_id }}/photo/{{ photo_id }}" method="post" id="comment-form">
                 <label>
-                    <input type="text" name="comment" value="" placeholder="Enter your comment here: "/>
+                    <input type="text" name="comment" id="comment_input " placeholder="Enter your comment here: "/>
                 </label>
                 <input type="submit" value="Comment" />
             </form>
@@ -303,7 +281,7 @@
                 <div class="overlay-content">
 
                     <section>
-                        <h1 id = "title_liked">Users who liked this photo:</h1>
+                        <h2 id = "title_liked">Users who liked this photo:</h2>
                         {%  for row in users_liked %}
                             <div class="user-row">
                                 <h2>{{row[0]}} {{row[1]}} {{row[2]}} {{row[3]}} {{row[4]}}</h2>

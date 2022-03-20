@@ -86,9 +86,9 @@
         {% for album in albums %}
             <div id="album">
                 <!-- Album is of form: ( ( album name, date created, cover image data) , ... )-->
-                <p> <a href="/album/{{ album[0] }}"> {{ album[1] }} </a> </p>
-                <img src='data:image/jpg;base64, {{ base64.b64encode(album[3]).decode("ascii") }}' width="100px" height="100px"/></li>
-
+                <p><a href="/album/{{ album[0] }}"> {{ album[1] }} </a> </p>
+                <p><a href="/album/{{ album[0] }}"><img src='data:image/jpg;base64, {{ base64.b64encode(album[3]).decode("ascii") }}' width="100px" height="100px"/></a></p>
+                
             </div>
         {% endfor %}
         </div>
