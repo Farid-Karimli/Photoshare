@@ -95,19 +95,20 @@
         
         <h4><a href="/upload-album"> Add more </a></h4>
         <h4><a href="/delete_album"> Delete album </a></h4>
+        <form method="post">
+            <h3>Find your photos with tags.</h3>
+            {% if no_input%}
+                <h4>Please enter a valid tag and try again.</h4>
+            {% endif %}
+            <label for='tags'></label><input type='text' name='tags' id='tags' /><br/>
+            <input type="submit" value="Search"/>
+        </form>
     {% else %}
         <h2> You don't have any albums! <a href="/upload-album"> Create one.</a></h2>
     {%  endif %}
 
     
-    <form method="post">
-        <h3>Find your photos with tags.</h3>
-        {% if no_input%}
-            <h4>Please enter a valid tag and try again.</h4>
-        {% endif %}
-        <label for='tags'></label><input type='text' name='tags' id='tags' /><br/>
-        <input type="submit" value="Search"/>
-    </form>
+    
 
 
 </body>
