@@ -618,9 +618,7 @@ def add_friend():
 	data = {}
 	if request.method == 'POST':
 
-		friend_id = request.form.get('added_friend')[0]
-
-		print("same", uid == friend_id)
+		friend_id = request.form.get('added_friend')
 
 		if((int)(uid) == (int)(friend_id)):
 			print(f"You can't be friends with yourself. ")
