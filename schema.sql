@@ -1,13 +1,5 @@
-drop database if exists photoshare;
 CREATE DATABASE IF NOT EXISTS photoshare;
 USE photoshare;
-DROP TABLE IF EXISTS Pictures CASCADE;
-DROP TABLE IF EXISTS Users CASCADE;
-DROP TABLE IF EXISTS Albums CASCADE;
-DROP TABLE IF EXISTS Tags CASCADE;
-DROP TABLE IF EXISTS Comments CASCADE;
-DROP TABLE IF EXISTS firends_with CASCADE;
-DROP TABLE IF EXISTS has_tag CASCADE;
 
 CREATE TABLE Users (
     user_id int4  AUTO_INCREMENT,
@@ -36,7 +28,7 @@ CREATE TABLE Pictures
 CREATE TABLE Albums(
 	album_id int4 AUTO_INCREMENT,
     album_name char(20),
-    date_created DATE DEFAULT (DATE_FORMAT(NOW(), '%y-%m-%d')),
+    date_created DATE SET DEFAULT (DATE_FORMAT(NOW(), '%y-%m-%d')),
     owner int4,
     cover_img longblob,
     FOREIGN KEY(owner) REFERENCES Users(user_id) ON DELETE CASCADE,
@@ -64,7 +56,11 @@ ALTER TABLE Pictures
     ADD FOREIGN KEY(album_id) 
     REFERENCES Albums(album_id) ON DELETE CASCADE,
     ADD FOREIGN KEY(user_id) 
-    REFERENCES Users(user_id) ON DELETE CASCADE;
+    REFERENCES Users(user_id) ON DELETE CASCADE,
+    ADD COLUMN likes int4 DEFAULT 0;
+
+ALTER TABLE Users
+ADD COLUMN profile_img longblob;
 
 CREATE TABLE friends_with(
 	user1 int4,
@@ -82,6 +78,17 @@ CREATE TABLE has_tag(
     FOREIGN KEY(picture_id) REFERENCES Pictures(picture_id) ON DELETE CASCADE
 );
 
+CREATE TABLE likes(
+	user_id int4,
+    photo_id int4,
+
+    PRIMARY KEY(user_id, photo_id),
+    FOREIGN KEY(user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY(photo_id) REFERENCES Pictures(picture_id) ON DELETE CASCADE
+
+);
+
 
 INSERT INTO Users (email, password, firstname, lastname) VALUES ('test@bu.edu', 'test','John','Doe');
 INSERT INTO Users (email, password,firstname, lastname) VALUES ('test1@bu.edu', 'test', 'Jane', 'Doe');
+INSERT INTO Users (user_id,firstname, lastname) VALUES (20, 'Guest', '');
