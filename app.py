@@ -184,8 +184,9 @@ def unauthorized_handler():
 
 @app.route("/register", methods=['GET'])
 def register():
-	print("in register")
-	return render_template('register.html', supress='True')
+	message = request.args.get('message')
+	print(f"message: {message}")
+	return render_template('register.html',msg=message)
 
 
 @app.route("/register", methods=['POST'])
@@ -213,7 +214,7 @@ def register_user():
 		return render_template('hello.html', message='Account Created!', name=flask_login.current_user.id,info=context,contribution_info = getAllUsersContribution(),recent_albums=getUserRecentAlbums(uid),recommend_friends=getTopFriendsOfFriends(uid),base64=base64, recommend_photos = getYouMayAlsoLike(uid))
 	else:
 		print("couldn't find all tokens")
-		return flask.redirect(flask.url_for('register'))
+		return flask.redirect('/register?message=True')
 
 
 def getUsersPhotos(uid):
@@ -584,8 +585,13 @@ def add_friends():
 		fullname = request.form.get('name')
 		print(fullname)
 		fullname = fullname.split()
-		cursor.execute('''SELECT user_id, firstname, lastname FROM Users WHERE firstname = %s and lastname = %s''',
+		if len(fullname) > 1:
+			cursor.execute('''SELECT user_id, firstname, lastname FROM Users WHERE firstname = %s and lastname = %s''',
 		               (fullname[0], fullname[1]))
+		else:
+			cursor.execute('''SELECT user_id, firstname FROM Users WHERE firstname = %s and lastname = %s''',
+		               (fullname[0]))
+		
 		data = cursor.fetchall()
 		found = False
 		if data:
