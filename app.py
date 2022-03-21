@@ -353,6 +353,7 @@ def getTopFriendsOfFriends(uid):
 					INNER JOIN Friends_with F1 WHERE F.user1={uid} and F.user2 = F1.user1 and not F1.user2 = {uid}
 					)
 					as FF
+				WHERE not user2  IN (SELECT user2 FROM Friends_with WHERE user1 = {uid})
 				GROUP BY user2
 				ORDER BY COUNT(user2) DESC
 			) as Recommended
