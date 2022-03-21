@@ -33,7 +33,7 @@
     }
 
     #cover {
-        {#background-image: url({{ url_for('static',filename='background.jpg') }});#}
+        /* {#background-image: url({{ url_for('static',filename='background.jpg') }});#} */
         width: 100vw;
         height: 30vh;
         display: flex;
@@ -46,12 +46,42 @@
     #cover  {
 
         color: white;
-        {#-webkit-text-stroke-width: 1px;#}
-        {#-webkit-text-stroke-color: black;#}
+        /* {#-webkit-text-stroke-width: 1px;#}
+        {#-webkit-text-stroke-color: black;#} */
     }
 
     #cover * {
         margin-bottom: 1vh;
+    }
+
+    input[type="submit"], .btn_add_friend {
+        background-color: #456268; 
+        border: none;
+        color: #FCF8EC;
+        padding: 8px 25px;
+        text-align: center;
+        text-decoration: none;
+        display: flex;
+        font-size: 16px;
+        font-family: 'Ubuntu', sans-serif;
+        align-items: center;
+        transition-duration: .4s;
+        border: 2px solid #456268;
+        margin-left: 100px;
+        margin-right: 100px;
+    }
+
+    input[type="submit"]:hover, .btn_add_friend:hover {
+        background-color: #FCF8EC; 
+        color: #456268;
+    }
+
+    .btn_add_friend{
+        margin:none;
+        margin-top: 15px;
+        padding: 5px 10px;
+        font-size: 10px;
+
     }
 
 </style>
@@ -106,6 +136,11 @@
             </div>
 
         </div>
+        {% if public %}
+            <form method="post" action="{{ url_for('add_friend') }}">
+                <button type="submit" name="added_friend" value="{{ userInfo[0] }}" class = "btn_add_friend">Add Friend</button>
+            </form>
+        {% endif %}
 
         {% if not public %}
             <h3><a href="/edit_profile">Edit Profile</a></h3>
