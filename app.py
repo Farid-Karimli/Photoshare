@@ -76,6 +76,19 @@ def getPhotos(caption=None):
 		data = cursor.fetchall()
 		return data
 
+def getComments(filter):
+	SQL = f'''SELECT user_id, firstname, lastname 
+				FROM Users U INNER JOIN Comments C ON U.user_id = C.owner_id 
+				WHERE NOT U.user_id = 20 AND text = '{filter}'
+				GROUP BY user_id
+				ORDER BY Count(comment_id) DESC
+				;'''
+	cursor = conn.cursor()
+	cursor.execute(SQL)
+	info_raw = cursor.fetchall()
+	return info_raw
+
+
 
 def getUserInfo(uid):
 	cursor = conn.cursor()
@@ -153,8 +166,6 @@ def login():
 			user.id = email
 			flask_login.login_user(user)  # okay login in user
 			# protected is a function defined in this file
-			print("User has logged in")
-			print("User: ", flask_login.current_user.id)
 			return flask.redirect(flask.url_for('protected'))
 		found = False
 		return flask.redirect(url_for('unauth'))
@@ -185,7 +196,6 @@ def unauthorized_handler():
 @app.route("/register", methods=['GET'])
 def register():
 	message = request.args.get('message')
-	print(f"message: {message}")
 	return render_template('register.html',msg=message)
 
 
@@ -203,8 +213,8 @@ def register_user():
 	cursor = conn.cursor()
 	test = isEmailUnique(email)
 	if test:
-		print(cursor.execute("INSERT INTO Users (email, password,firstname,lastname,birthdate) VALUES ('{0}','{1}','{2}','{3}','{4}')".format(
-		    email, password, firstname, lastname, date)))
+		cursor.execute("INSERT INTO Users (email, password,firstname,lastname,birthdate) VALUES ('{0}','{1}','{2}','{3}','{4}')".format(
+		    email, password, firstname, lastname, date))
 		conn.commit()
 		# log user in
 		user = User()
@@ -213,7 +223,6 @@ def register_user():
 		uid = getUserIdFromEmail(flask_login.current_user.id)
 		return render_template('hello.html', message='Account Created!', name=flask_login.current_user.id,info=context,contribution_info = getAllUsersContribution(),recent_albums=getUserRecentAlbums(uid),recommend_friends=getTopFriendsOfFriends(uid),base64=base64, recommend_photos = getYouMayAlsoLike(uid))
 	else:
-		print("couldn't find all tokens")
 		return flask.redirect('/register?message=True')
 
 
@@ -266,7 +275,6 @@ def getUserFriends(uid):
 						ON U.user_id = F.user2
 						WHERE user1 = {uid}''')
 	info_raw = cursor.fetchall()
-	print(info_raw)
 	return info_raw
 
 
@@ -278,7 +286,6 @@ def getLikedUsers(photo_id):
 						USING(user_id)
 						Where photo_id = {photo_id}''')
 	info_raw = cursor.fetchall()
-	print(info_raw)
 	return info_raw
 
 
@@ -287,7 +294,6 @@ def getPhotoComments(photo_id, comment_filter=None):
 	info_raw = None
 
 	if comment_filter is not None:
-		print('Filtered')
 		cursor.execute(f'''SELECT firstname,lastname,text,owner_id,comment_id
 								FROM photoshare.Users U
 								CROSS JOIN photoshare.Comments C
@@ -363,7 +369,6 @@ def getTopFriendsOfFriends(uid):
 	cursor = conn.cursor()
 	cursor.execute(Sql_statement)
 	data = cursor.fetchall()
-	print(f'friends of friends: {data}')
 	return data
 
 
@@ -489,7 +494,6 @@ def getYouMayAlsoLike(uid):
 						GROUP BY H.tag_id, P.user_id
 						ORDER BY count(*) DESC LIMIT 5 ) AS top_tags''')
 	top_5_raw = cursor.fetchall()
-	print(top_5_raw)
 	#user has enough tags for custom recommendation recommend photos with top 5 tags
 	if len(top_5_raw) != 5:
 		cursor.execute(f''' SELECT P.user_id, h.tag_id, t.text, Count(*) 
@@ -519,12 +523,14 @@ def getYouMayAlsoLike(uid):
 						) AS t1 GROUP BY picture_id HAVING count(*) >= 1 ORDER BY CMATCH DESC)) P
 						WHERE P.picture_id = H.picture_id GROUP BY P.picture_id ORDER BY P.CMATCH DESC, CNUMTAGS ASC LIMIT 5) X''')
 	rec_photos_raw = cursor.fetchall()
-	print(rec_photos_raw)
 	conn.commit()
 	rec_photos = []
 	for photo in rec_photos_raw:
 		rec_photos.append(photo[0])
-	cursor.execute(f"SELECT caption, imgdata, album_id, picture_id FROM Pictures WHERE picture_id IN ({rec_photos[0]}, {rec_photos[1]}, {rec_photos[2]}, {rec_photos[3]}, {rec_photos[4]}) ORDER BY FIELD(picture_id, {rec_photos[0]}, {rec_photos[1]}, {rec_photos[2]}, {rec_photos[3]}, {rec_photos[4]} )")
+	try:
+		cursor.execute(f"SELECT caption, imgdata, album_id, picture_id FROM Pictures WHERE picture_id IN ({rec_photos[0]}, {rec_photos[1]}, {rec_photos[2]}, {rec_photos[3]}, {rec_photos[4]}) ORDER BY FIELD(picture_id, {rec_photos[0]}, {rec_photos[1]}, {rec_photos[2]}, {rec_photos[3]}, {rec_photos[4]} )")
+	except IndexError:
+		return None
 	photos = cursor.fetchall()
 	return photos
 	
@@ -583,7 +589,6 @@ def add_friends():
 	if request.method == 'POST':
 		uid = getUserIdFromEmail(flask_login.current_user.id)
 		fullname = request.form.get('name')
-		print(fullname)
 		fullname = fullname.split()
 		if len(fullname) > 1:
 			cursor.execute('''SELECT user_id, firstname, lastname FROM Users WHERE firstname = %s and lastname = %s''',
@@ -628,7 +633,6 @@ def add_friend():
 		friend_id = request.form.get('added_friend')
 
 		if((int)(uid) == (int)(friend_id)):
-			print(f"You can't be friends with yourself. ")
 			return render_template('add_friends.html', data={}, found=True, friend_self=True)
 
 		else:
@@ -639,7 +643,6 @@ def add_friend():
 			if existing_friends:
 				return render_template('add_friends.html', data={}, found=True, existing_friends=True)
 			else:
-				print("No issue until here")
 				cursor.execute(
 				    '''INSERT INTO friends_with (user1, user2) VALUES (%s, %s )''', (uid, friend_id))
 				cursor.execute(
@@ -664,7 +667,6 @@ def friend():
 def delete_photo(album_id):
 	uid = getUserIdFromEmail(flask_login.current_user.id)
 	if request.method == "POST":
-		print(request.form.get('photo'))
 		photo_id = request.form.get('photo')
 		cursor = conn.cursor()
 		cursor.execute(
@@ -683,7 +685,6 @@ def delete_photo(album_id):
 def delete_album():
 	uid = getUserIdFromEmail(flask_login.current_user.id)
 	if request.method == "POST":
-		print(request.form.get('album'))
 		album_id = request.form.get('album')
 		cursor = conn.cursor()
 		cursor.execute('DELETE FROM Albums WHERE album_id=%s', (album_id))
@@ -806,10 +807,8 @@ def photo(album_id, photo_id, comment_filter):
 		pic_owner = cursor.fetchall()[0][0]
 		comment_query = request.form.get('filter')
 		users_liked = request.form.get('users_liked')
-		print(f'In photo() comment_filter = {comment_query}')
 
 		if comment:
-			print('in comment')
 			todays_date = str(datetime.date.today())
 			if(pic_owner == uid):
 				return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64, comments=getPhotoComments(photo_id), user=uid, dismiss_comment=True, tags=getPhotoTags(photo_id), user_info=userInfo)
@@ -820,22 +819,18 @@ def photo(album_id, photo_id, comment_filter):
 			conn.commit()
 
 		elif to_delete:
-			print('in to_delete')
 			cursor.execute(f'''DELETE FROM Comments WHERE comment_id={to_delete}''')
 			cursor.execute(
 			    '''UPDATE Users SET contribution_score = (contribution_score - 1) WHERE user_id = %s''', (uid))
 			conn.commit()
 		elif like:
-			print('in like')
 			if(pic_owner == uid):
 				return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64, comments=getPhotoComments(photo_id), user=uid, dismiss_like=True, tags=getPhotoTags(photo_id), user_info=userInfo,tag_owner=can_add_tag)
 			else:
 				cursor.execute(
 				    '''SELECT count(*) FROM likes WHERE user_id = %s and photo_id = %s  ''', (uid, photo_id))
 				liked_earlier = cursor.fetchall()[0][0]
-				print(liked_earlier)
 				if(liked_earlier):
-					print(uid, photo_id)
 					cursor.execute(
 					    '''DELETE FROM likes WHERE user_id = %s and photo_id = %s''', (uid, photo_id))
 					cursor.execute(
@@ -853,13 +848,10 @@ def photo(album_id, photo_id, comment_filter):
 					conn.commit()
 			'''elif users_liked:
 			users_liked = getLikedUsers(photo_id)
-			print(users_liked)
 			return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,
 								   comments=getPhotoComments(photo_id), user=uid, get_liked_users=True,
 								   users_liked=users_liked, user_info=userInfo, tags=getPhotoTags(photo_id))'''
 		elif comment_query:
-
-			print(f'Filtering... by filter: {comment_query}')
 			return render_template('photo.html', data=data, album_id=album_id, photo_id=photo_id, base64=base64,
 								   comments=getPhotoComments(photo_id, comment_query), user=uid, tags=getPhotoTags(photo_id), user_info=userInfo, users_liked = getLikedUsers(photo_id),tag_owner=can_add_tag)
 
@@ -882,6 +874,10 @@ def photosWithTag(tag_id):
 	tag_txt = cursor.fetchall()[0][0]
 	return render_template("tag.html", photos=photos, base64=base64, tag_txt=tag_txt)
 
+
+@app.route("/comment/<query>", methods=['GET'])
+def comments(query):
+	return render_template("comments.html",data=getComments(query),search=query)
 
 @app.route("/profile/upload", methods=['GET', 'POST'])
 @flask_login.login_required
@@ -912,7 +908,6 @@ def profile_public(user_id):
 def profile():
 	uid = getUserIdFromEmail(flask_login.current_user.id)
 	userInfo = getUserInfo(uid)
-	print(f'userinfo {userInfo}')
 	return render_template("profile.html", userInfo=userInfo, base64=base64)
 
 
@@ -964,7 +959,6 @@ def getAlbumsWithName(name=None):
 	if name is None or name=="":
 		return getPopularAlbums()
 	else:
-		print(f'name: {name}')
 		cursor.execute(f'''SELECT cover_img,album_name,album_id FROM Albums WHERE album_name="{name}"''')
 		data = cursor.fetchall()
 		return data
@@ -972,7 +966,6 @@ def getAlbumsWithName(name=None):
 @app.route('/browse', methods=['GET','POST'])
 def browse():
 	search_query = request.form.get('browse_query')
-	print(f"search_query: '{search_query}'")
 	option = request.form.get('browse_option')
 	not_found = False
 	if option=='photo':
@@ -980,6 +973,8 @@ def browse():
 		if data == ():
 			not_found = True
 		return render_template('explore.html', albums=None, photos=data,base64=base64, tags=getPopularTags(),notFound = not_found)
+	elif option=='comment':
+		return flask.redirect(url_for('comments',query=search_query))
 	else:
 		data = getAlbumsWithName(search_query)
 		if data == ():

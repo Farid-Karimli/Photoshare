@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Explore</title>
+    <title>Comments</title>
     <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}" />
 
 </head>
@@ -64,13 +64,6 @@
         input[type="text"]:hover{
             border: solid 1.5px #79A3B1;
         }
-        #tags-view {
-            margin-top: 4vh;
-            margin-bottom: 10vh;
-        }
-        #tags p {
-            margin: 0 1vw;
-        }
 </style>
 <body>
     <header>
@@ -102,69 +95,17 @@
             {% endif %}
     </header>
 
-    <h2>Explore Albums and Photos </h2>
-
-    <form method="post" id="browse" action="/browse">
-            <label>
-                <input type="text" class="text-input" name="browse_query"/>
-            </label>
-            <select name="browse_option" id="browse_option" required>
-                <option value="album">Albums</option>
-                <option value="photo">Photos</option>
-                <option value="comment">Comments</option>
-            </select>
-            <input type="submit" class="submit" value="Search">
-    </form>
-
-    {% if albums %}
-     <h3>Albums</h3>
-     <div id="albums-view">
-
-        {% for album in albums %}
-            {# album = (cover_img, album_name, album_id) #}
-            <div id="album">
-                <p><a href="/album/{{ album[2] }}"><img src='data:image/jpg;base64, {{ base64.b64encode(album[0]).decode("ascii") }}' width="100px" height="100px"/></a></p>
-                <p><a href="/album/{{ album[2] }}">{{ album[1] }}</a></p>
-              
-            </div>
+    <h2>Users that commented {{search}} </h2>
+    <div id="user-view">
+        {% for user in data %}
+        <div class="user">
+            <p><a href='/profile/{{user[0]}}'>{{user[1]}} {{user[2]}}</a></p>
+        </div>
         {% endfor %}
     </div>
-    {% endif %}
+    
+    
 
-    {% if photos %}
-    <h3>Photos</h3>
-    <div id="albums-view">
-            {% for photo in photos %}
-                {# photo = (imgdata, caption, picture_id) #}
-                <div id="album">
-                    <p><a href="/album/{{ photo[3] }}/photo/{{ photo[2] }}"><img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}' width="100px" height="100px"/></a></p>
-                    <p><a href="/album/{{ photo[3] }}/photo/{{ photo[2] }}">{{ photo[1] }}</a></p>
-                </div>
-            {% endfor %}
-    {% endif %}
-    </div>
-
-    <h2>Explore Tags</h2>
-        {% if no_input%}
-            <h4>Please enter a valid tag and try again.</h4>
-        {% endif %}
-        <form method="post" id="tagsearch-form">
-            <label>
-                <input type="text" class="text-input" name="tags"/>
-            </label>
-            <input type="submit" class="submit" value="Search">
-        </form>
-        
-    <div id ="tags-view">
-        <div id="tags">
-            {% for tag in tags %}
-                {# tag = (tag_id, tag_text) #}
-                <p><a href="/tags/{{tag[0]}}">#{{ tag[1] }} </a></p>
-            {% endfor %}
-        </div>
-    </div>
-
-
-    </div>
+   
 </body>
 </html>
