@@ -137,9 +137,11 @@
 
         </div>
         {% if public %}
+            {% if not friend %}
             <form method="post" action="{{ url_for('add_friend') }}">
                 <button type="submit" name="added_friend" value="{{ userInfo[0] }}" class = "btn_add_friend">Add Friend</button>
             </form>
+            {% endif %}
         {% endif %}
 
         {% if not public %}

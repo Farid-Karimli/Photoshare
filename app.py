@@ -59,6 +59,15 @@ def convertTupleStr(tuple):
 	return string
 
 
+def isFriend(uid1,uid2):
+	SQL = f'SELECT * FROM Friends_with WHERE user1={uid1} AND user2={uid2}'
+	cursor=conn.cursor()
+	cursor.execute(SQL)
+	data = cursor.fetchall()
+	print(f'data: {data}')
+	return not len(data) == 0
+
+
 def getPhotos(caption=None):
 	cursor = conn.cursor()
 	if caption is None or caption == "":
@@ -899,8 +908,9 @@ def upload_profile_pic():
 
 @app.route("/profile/<user_id>", methods=['GET'])
 def profile_public(user_id):
+	uid=getUserIdFromEmail(flask_login.current_user.id)
 	userInfo = getUserInfo(user_id)
-	return render_template("profile.html", userInfo=userInfo, base64=base64, public=True)
+	return render_template("profile.html", userInfo=userInfo, base64=base64, public=True,friend=isFriend(uid,user_id))
 
 
 @app.route("/profile", methods=['GET'])
